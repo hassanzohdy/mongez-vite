@@ -1,7 +1,14 @@
 import { MongezViteOptions } from ".types";
 import { getFile, putFile } from "@mongez/fs";
 import chalk from "chalk";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 import { UserConfig } from "vite";
+
+// this is needed because of esm module does not support __dirname
+if (typeof __dirname === "undefined") {
+  globalThis.__dirname = dirname(fileURLToPath(import.meta.url));
+}
 
 const preprenderContent = (crawlers: string) => `# Prerender
 RewriteCond %{HTTP_USER_AGENT} .*(${crawlers}).* [NC]
@@ -11,7 +18,7 @@ RewriteRule (.*) prerender.php?path=/$1 [L,QSA]
 
 export async function generateHtaccess(
   config: UserConfig,
-  options: MongezViteOptions,
+  options: MongezViteOptions
 ) {
   if (!options.htaccess) return;
 
@@ -25,14 +32,14 @@ export async function generateHtaccess(
   if (options.preRender) {
     htaccessFile = htaccessFile.replace(
       "# Prerender",
-      preprenderContent(options.preRender.crawlers),
+      preprenderContent(options.preRender.crawlers)
     );
 
     let preRenderFile = getFile(__dirname + "/prerender.php");
 
     preRenderFile = preRenderFile.replace(
       "__PRENDER_URL__",
-      options.preRender.url,
+      options.preRender.url
     );
 
     putFile(outDir + "/prerender.php", preRenderFile);
@@ -43,6 +50,6 @@ export async function generateHtaccess(
   putFile(outDir + "/.htaccess", htaccessFile);
 
   console.log(
-    chalk.greenBright("Htaccess file has been generated successfully!"),
+    chalk.greenBright("Htaccess file has been generated successfully!")
   );
 }
