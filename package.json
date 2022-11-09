@@ -1,6 +1,6 @@
 {
     "name": "@mongez/vite",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A Vite plugin to manage development and build process",
     "main": "src/index.ts",
     "dependencies": {
@@ -11,7 +11,7 @@
         "archiver": "^5.3.1"
     },
     "devDependencies": {
-        "chalk": "^4.x.x"
+        "chalk": "4"
     },
     "peerDependencies": {
         "vite": "> 2.0.0"
