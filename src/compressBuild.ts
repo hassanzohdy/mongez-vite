@@ -24,12 +24,12 @@ export default async function compressBuild(
       zlib: 9,
     });
 
-    const output = fs.createWriteStream(root(options.compressFileName));
+    const output = fs.createWriteStream(root(options.compressedFileName));
 
     archive.pipe(output);
 
     await archive.directory(buildPath, "").finalize();
-    move(root(options.compressFileName), buildPath + "/build.zip");
+    move(root(options.compressedFileName), buildPath + "/build.zip");
 
     console.log(
       chalk.greenBright("Build Files Have Been Compressed Successfully!")
