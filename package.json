@@ -1,6 +1,6 @@
 {
     "name": "@mongez/vite",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "A Vite plugin to manage development and build process",
     "main": "src/index.ts",
     "dependencies": {
