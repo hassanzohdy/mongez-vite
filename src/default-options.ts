@@ -1,3 +1,4 @@
+import { cwd } from "process";
 import { MongezViteOptions } from "./types";
 
 export const defaultOptions: MongezViteOptions = {
@@ -15,6 +16,6 @@ export const defaultOptions: MongezViteOptions = {
     url: "https://render.mentoor.io",
   },
   optimizeDeps: {
-    entries: ["./index.html", "./src/apps/**/provider.ts"],
+    entries: [cwd() + "/index.html", cwd() + "/src/apps/**/provider.ts"],
   },
 };
