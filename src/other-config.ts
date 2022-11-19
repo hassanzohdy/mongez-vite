@@ -17,4 +17,8 @@ export default function resolveOtherConfig(
 
     config.base = baseUrl;
   }
+
+  if (!config.optimizeDeps && options.optimizeDeps) {
+    config.optimizeDeps = options.optimizeDeps;
+  }
 }
