@@ -13,37 +13,23 @@ function get_content($URL)
   return $data;
 }
 
-$path = ltrim($_GET['path'], '/');
+$prerenderUrl = "https://render.mentoor.io";
 
-unset($_GET['path']);
-
-$prerenderUrl = "__PRENDER_URL__";
-
-// for arabic letters and utf8 in general
-$path = urldecode($path);
-
-$domain = $_GET['domain'];
-
-unset($_GET['domain']);
-
-$userAgent = preg_split('/[\s\/\),-.]+/', $_SERVER['HTTP_USER_AGENT'])[0];
-
-$url = 'https://' . $_SERVER['HTTP_HOST'] . '/' . $path;
+$url = $_SERVER['SCRIPT_URI'];
 
 if (! empty($_GET)) {
     $url .= '?' . http_build_query($_GET);
 }
 
-$_GET = [];
-
 // for arabic letters and utf8 in general
 $url = urlencode($url);
 
-$_GET['url'] = $url;
+$params = [
+    'url' => $url,
+    '__agent' => $userAgent
+];
 
-$_GET['__agent'] = $userAgent;
-
-$url = "$prerenderUrl?" . http_build_query($_GET);
+$url = "$prerenderUrl?" . http_build_query($params);
 
 $content = get_content($url);
 

@@ -13,7 +13,7 @@ if (typeof __dirname === "undefined") {
 const preprenderContent = (crawlers: string) => `# Prerender
 RewriteCond %{HTTP_USER_AGENT} .*(${crawlers}).* [NC]
 RewriteCond %{REQUEST_URI} !^(/public)
-RewriteRule (.*) prerender.php?path=/$1 [L,QSA]
+RewriteRule (.*) prerender.php [L,QSA]
 `;
 
 export async function generateHtaccess(
