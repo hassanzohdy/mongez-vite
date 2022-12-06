@@ -24,6 +24,8 @@ if (! empty($_GET)) {
 // for arabic letters and utf8 in general
 $url = urlencode($url);
 
+$userAgent = $_SERVER['HTTP_USER_AGENT'];
+
 $params = [
     'url' => $url,
     '__agent' => $userAgent
