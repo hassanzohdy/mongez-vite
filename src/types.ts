@@ -92,5 +92,17 @@ export type MongezViteOptions = {
      * @default https://render.mentoor.io
      */
     url?: string;
+    /**
+     * Delay before prerendering in milliseconds
+     *
+     * @default 5000
+     */
+    delay?: number;
+    /**
+     * Wether to getting a fresh content each time on crawling the url
+     *
+     * @default false
+     */
+    refresh?: boolean;
   };
 };

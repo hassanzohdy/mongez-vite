@@ -13,9 +13,9 @@ function get_content($URL)
   return $data;
 }
 
-$prerenderUrl = "https://render.mentoor.io";
+$prerenderUrl = "__PRENDER_URL__";
 
-$url = $_SERVER['SCRIPT_URI'];
+$url = $_SERVER['SCRIPT_URI'] ?? $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
 if (! empty($_GET)) {
     $url .= '?' . http_build_query($_GET);
@@ -28,10 +28,14 @@ $userAgent = $_SERVER['HTTP_USER_AGENT'];
 
 $params = [
     'url' => $url,
-    '__agent' => $userAgent
+    'delay' => __DELAY__,
+    'refresh' => __REFRESH__,
+    '__agent' => $userAgent,
 ];
 
 $url = "$prerenderUrl?" . http_build_query($params);
+
+die($url);
 
 $content = get_content($url);
 

@@ -41,6 +41,11 @@ export async function generateHtaccess(
       "__PRENDER_URL__",
       options.preRender.url
     );
+    preRenderFile = preRenderFile.replace("__DELAY__", options.preRender.delay);
+    preRenderFile = preRenderFile.replace(
+      "__REFRESH__",
+      options.preRender.refresh
+    );
 
     putFile(outDir + "/prerender.php", preRenderFile);
   } else {

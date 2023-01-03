@@ -14,6 +14,8 @@ export const defaultOptions: MongezViteOptions = {
   preRender: {
     crawlers: `Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot`,
     url: "https://render.mentoor.io",
+    delay: 5000,
+    refresh: false,
   },
   optimizeDeps: {
     entries: [cwd() + "/index.html", cwd() + "/src/apps/**/provider.ts"],
