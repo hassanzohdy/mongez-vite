@@ -3,8 +3,7 @@ export default function generatePreRenderContent({
   refresh,
   delay,
 }) {
-  return `
-<?php
+  return `<?php
 
 function get_content($URL)
 {
@@ -19,7 +18,7 @@ function get_content($URL)
   return $data;
 }
 
-$prerenderUrl = '${prerenderUrl}}';
+$prerenderUrl = '${prerenderUrl}';
 
 $url = $_SERVER['SCRIPT_URI'] ?? $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
