@@ -15,7 +15,7 @@ RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 # Skip files that ends with asset extension
-RewriteRule \.(jpg|png|ico|jpeg|webp|gif|bmp|webp)$ - [L]
+RewriteRule \.(jpg|png|ico|jpeg|webp|gif|bmp|webp|svg)$ - [L]
 # Skip assets files 
 RewriteRule assets/(.*) assets/$1 [L]
 
