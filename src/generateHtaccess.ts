@@ -4,6 +4,7 @@ import chalk from "chalk";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { UserConfig } from "vite";
+import generatePreRenderContent from "./prerender";
 
 // this is needed because of esm module does not support __dirname
 if (typeof __dirname === "undefined") {
@@ -35,19 +36,13 @@ export async function generateHtaccess(
       preprenderContent(options.preRender.crawlers)
     );
 
-    let preRenderFile = getFile(__dirname + "/prerender.php");
+    const preRenderContent = generatePreRenderContent({
+      delay: options.preRender.delay,
+      refresh: options.preRender.refresh,
+      prerenderUrl: options.preRender.url,
+    });
 
-    preRenderFile = preRenderFile.replace(
-      "__PRENDER_URL__",
-      options.preRender.url
-    );
-    preRenderFile = preRenderFile.replace("__DELAY__", options.preRender.delay);
-    preRenderFile = preRenderFile.replace(
-      "__REFRESH__",
-      options.preRender.refresh
-    );
-
-    putFile(outDir + "/prerender.php", preRenderFile);
+    putFile(outDir + "/prerender.php", preRenderContent);
   } else {
     htaccessFile = htaccessFile.replace("# Prerender", "");
   }

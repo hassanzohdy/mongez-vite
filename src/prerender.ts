@@ -1,3 +1,9 @@
+export default function generatePreRenderContent({
+  prerenderUrl,
+  refresh,
+  delay,
+}) {
+  return `
 <?php
 
 function get_content($URL)
@@ -13,7 +19,7 @@ function get_content($URL)
   return $data;
 }
 
-$prerenderUrl = "__PRENDER_URL__";
+$prerenderUrl = '${prerenderUrl}}';
 
 $url = $_SERVER['SCRIPT_URI'] ?? $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
@@ -28,15 +34,14 @@ $userAgent = $_SERVER['HTTP_USER_AGENT'];
 
 $params = [
     'url' => $url,
-    'delay' => __DELAY__,
-    'refresh' => __REFRESH__,
+    'delay' => ${delay},
+    'refresh' => ${refresh},
     '__agent' => $userAgent,
 ];
 
 $url = "$prerenderUrl?" . http_build_query($params);
 
-die($url);
-
 $content = get_content($url);
 
-echo $content;
+echo $content;`;
+}
