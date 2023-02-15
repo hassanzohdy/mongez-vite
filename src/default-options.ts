@@ -12,7 +12,7 @@ export const defaultOptions: MongezViteOptions = {
   compressBuild: true,
   htaccess: true,
   preRender: {
-    crawlers: `Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot`,
+    crawlers: `Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot`,
     url: "https://render.mentoor.io",
     delay: 5000,
     refresh: false,
