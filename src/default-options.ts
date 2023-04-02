@@ -12,10 +12,10 @@ export const defaultOptions: MongezViteOptions = {
   compressBuild: true,
   htaccess: true,
   preRender: {
-    crawlers: `Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot`,
+    crawlers: `Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter`,
     url: "https://render.mentoor.io",
     delay: 5000,
-    refresh: false,
+    cache: false,
   },
   optimizeDeps: {
     entries: [cwd() + "/index.html", cwd() + "/src/apps/**/provider.ts"],

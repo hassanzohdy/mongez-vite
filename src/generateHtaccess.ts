@@ -38,7 +38,7 @@ export async function generateHtaccess(
 
     const preRenderContent = generatePreRenderContent({
       delay: options.preRender.delay,
-      refresh: options.preRender.refresh,
+      cache: options.preRender.cache,
       prerenderUrl: options.preRender.url,
     });
 

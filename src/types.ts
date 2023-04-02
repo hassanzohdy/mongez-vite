@@ -99,10 +99,10 @@ export type MongezViteOptions = {
      */
     delay?: number;
     /**
-     * Wether to getting a fresh content each time on crawling the url
+     * Wether to tell the crawler to cache the response after first render
      *
      * @default false
      */
-    refresh?: boolean;
+    cache?: boolean;
   };
 };

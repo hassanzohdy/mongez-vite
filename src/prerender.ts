@@ -1,6 +1,6 @@
 export default function generatePreRenderContent({
   prerenderUrl,
-  refresh,
+  cache,
   delay,
 }) {
   return `<?php
@@ -53,7 +53,7 @@ $userAgent = $_SERVER['HTTP_USER_AGENT'];
 $params = [
     'url' => $url,
     'delay' => ${delay},
-    'refresh' => ${refresh},
+    'cache' => ${cache},
     '__agent' => $userAgent,
 ];
 

@@ -1,13 +1,13 @@
 {
     "name": "@mongez/vite",
-    "version": "1.0.20",
+    "version": "1.0.21",
     "description": "A Vite plugin to manage development and build process",
     "main": "src/index.ts",
     "dependencies": {
-        "@mongez/events": "^1.0.x",
-        "@mongez/dotenv": "^1.x.x",
-        "@mongez/reinforcements": "^2.2.x",
-        "@mongez/fs": "^1.1.x",
+        "@mongez/events": "^2.0.0",
+        "@mongez/reinforcements": "^2.2.8",
+        "@mongez/dotenv": "^1.0.3",
+        "@mongez/fs": "^2.0.0",
         "archiver": "^5.3.1"
     },
     "devDependencies": {
