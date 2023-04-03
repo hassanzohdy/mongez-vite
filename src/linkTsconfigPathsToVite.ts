@@ -1,4 +1,4 @@
-import { fileExists, getJson } from "@mongez/fs";
+import { fileExists, getJsonFile } from "@mongez/fs";
 import { UserConfig } from "vite";
 import { MongezViteOptions } from "./types";
 import { root } from "./utils";
@@ -11,7 +11,7 @@ export default function linkTsconfigPathsToVite() {
 
   if (!fileExists(root("tsconfig.json"))) return;
 
-  const tsconfig = getJson(root("tsconfig.json"));
+  const tsconfig = getJsonFile(root("tsconfig.json"));
 
   if (!tsconfig.compilerOptions?.paths) return;
 

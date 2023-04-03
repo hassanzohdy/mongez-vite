@@ -1,4 +1,4 @@
-import { move } from "@mongez/fs";
+import { moveFile } from "@mongez/fs";
 import archiver from "archiver";
 import chalk from "chalk";
 import fs from "fs";
@@ -29,7 +29,7 @@ export default async function compressBuild(
     archive.pipe(output);
 
     await archive.directory(buildPath, "").finalize();
-    move(root(options.compressedFileName), buildPath + "/build.zip");
+    moveFile(root(options.compressedFileName), buildPath + "/build.zip");
 
     console.log(
       chalk.greenBright("Build Files Have Been Compressed Successfully!")
