@@ -26,17 +26,19 @@ function detectEnvironmentVariablesAndLoadIt(command: ConfigEnv["command"]) {
   }
 
   loadEnv(envPath, {
-    override: false,
+    override: true,
+    loadSharedEnv: true,
   });
 }
 
 export default function resolveEnvironmentVariables(
   command: ConfigEnv["command"],
-  options: MongezViteOptions,
+  options: MongezViteOptions
 ) {
   if (options.productionEnvName && command === "build") {
     loadEnv(root(".env." + options.productionEnvName), {
-      override: false,
+      override: true,
+      loadSharedEnv: true,
     });
   } else {
     detectEnvironmentVariablesAndLoadIt(command);

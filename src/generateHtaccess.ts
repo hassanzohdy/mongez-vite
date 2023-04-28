@@ -7,9 +7,7 @@ import { UserConfig } from "vite";
 import generatePreRenderContent from "./prerender";
 
 // this is needed because of esm module does not support __dirname
-if (typeof __dirname === "undefined") {
-  globalThis.__dirname = dirname(fileURLToPath(import.meta.url));
-}
+const _dirname = typeof __dirname !== "undefined" ? __dirname : dirname(fileURLToPath(import.meta.url));
 
 const preprenderContent = (crawlers: string) => `# Prerender
 RewriteCond %{HTTP_USER_AGENT} .*(${crawlers}).* [NC]
@@ -28,7 +26,7 @@ export async function generateHtaccess(
   const outDir = config.build?.outDir || "dist";
 
   // generate htaccess file in the build directory
-  let htaccessFile = getFile(__dirname + "/.htaccess");
+  let htaccessFile = getFile(_dirname + "/.htaccess");
 
   if (options.preRender) {
     htaccessFile = htaccessFile.replace(
