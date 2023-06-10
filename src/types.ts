@@ -67,7 +67,7 @@ export type MongezViteOptions = {
    *
    * @default build.zip
    */
-  compressedFileName?: string;
+  compressedFileName?: string | (() => string) | (() => Promise<string>);
   /**
    * Determine whether to generate .htaccess file for build
    *
