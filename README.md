@@ -308,8 +308,9 @@ export default defineConfig((): UserConfigExport => {
       mongezVite({
         preRender: {
           url: "https://my-pre-render-server.com",
-          crawlers: 'Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot'
-        }
+          crawlers:
+            "Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot",
+        },
       }),
       react(),
     ],
@@ -322,3 +323,5 @@ Here we set the pre render service url and crawlers that will be used to detect 
 This feature requires .htaccess to be enabled, also it will generate a `prerender.php` file in the `dist` directory of your project, which will be call the pre-render service url and return the html to the crawler.
 
 > For the time being, there is already an injected pre render service in the package which is `https://render.mentoor.io` that receives the url that should be rendered and returns the html, however, you can use your own pre-render service by setting the `url` option.
+
+To disable pre render service, just set `preRender` option to `false`.

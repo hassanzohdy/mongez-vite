@@ -104,5 +104,5 @@ export type MongezViteOptions = {
      * @default false
      */
     cache?: boolean;
-  };
+  } | false;
 };
