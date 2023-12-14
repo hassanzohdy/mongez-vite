@@ -1,6 +1,6 @@
 import { env } from "@mongez/dotenv";
 import { rtrim } from "@mongez/reinforcements";
-import chalk from "chalk";
+import copper from "@mongez/copper";
 import { ConfigEnv, UserConfig } from "vite";
 import { MongezViteOptions } from "./types";
 
@@ -13,7 +13,7 @@ export default function resolveOtherConfig(
     let baseUrl = "";
 
     baseUrl = rtrim(env(options.envBaseUrlKey), "/") + "/";
-    console.log("Creating A Build For Production:", chalk.green(baseUrl));
+    console.log("Creating A Build For Production:", copper.green(baseUrl));
 
     config.base = baseUrl;
   }

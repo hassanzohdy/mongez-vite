@@ -34,7 +34,7 @@ export default function mongezVite(
       return config;
     },
     transformIndexHtml: {
-      transform(html) {
+      handle(html) {
         return transformEnvironmentVariablesInHtml(html, options);
       },
     },

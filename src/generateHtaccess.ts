@@ -1,6 +1,6 @@
 import { MongezViteOptions } from ".types";
 import { getFile, putFile } from "@mongez/fs";
-import chalk from "chalk";
+import copper from "@mongez/copper";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { UserConfig } from "vite";
@@ -21,7 +21,7 @@ export async function generateHtaccess(
 ) {
   if (!options.htaccess) return;
 
-  console.log(chalk.yellowBright("Generating htaccess file..."));
+  console.log(copper.yellowBright("Generating htaccess file..."));
 
   const outDir = config.build?.outDir || "dist";
 
@@ -48,6 +48,6 @@ export async function generateHtaccess(
   putFile(outDir + "/.htaccess", htaccessFile);
 
   console.log(
-    chalk.greenBright("Htaccess file has been generated successfully!")
+    copper.greenBright("Htaccess file has been generated successfully!")
   );
 }
