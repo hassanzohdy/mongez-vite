@@ -12,7 +12,7 @@ import { MongezViteOptions } from "./types";
 let currentConfig: UserConfig;
 
 export default function mongezVite(
-  pluginOptions: MongezViteOptions = {},
+  pluginOptions: MongezViteOptions = {}
 ): PluginOption {
   const options = { ...defaultOptions, ...pluginOptions };
   return {
@@ -33,10 +33,8 @@ export default function mongezVite(
 
       return config;
     },
-    transformIndexHtml: {
-      handle(html) {
-        return transformEnvironmentVariablesInHtml(html, options);
-      },
+    transformIndexHtml: (html) => {
+      return transformEnvironmentVariablesInHtml(html, options);
     },
   };
 }
