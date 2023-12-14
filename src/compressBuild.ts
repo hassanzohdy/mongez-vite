@@ -1,6 +1,6 @@
 import { moveFile } from "@mongez/fs";
 import archiver from "archiver";
-import copper from "@mongez/copper";
+import { colors } from "@mongez/copper";
 import fs from "fs";
 import { UserConfig } from "vite";
 import { MongezViteOptions } from "./types";
@@ -15,7 +15,7 @@ export default async function compressBuild(
   setTimeout(async () => {
     const outDir = config.build?.outDir || "dist";
 
-    console.log(copper.yellowBright("Compressing build directory..."));
+    console.log(colors.yellowBright("Compressing build directory..."));
 
     // import path package
     const buildPath = root(outDir);
@@ -37,7 +37,7 @@ export default async function compressBuild(
     moveFile(root(fileName), buildPath + "/" + fileName);
 
     console.log(
-      copper.greenBright("Build Files Have Been Compressed Successfully!")
+      colors.greenBright("Build Files Have Been Compressed Successfully!")
     );
   }, 1000);
 }
