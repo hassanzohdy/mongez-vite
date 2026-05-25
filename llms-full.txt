@@ -1,0 +1,211 @@
+# @mongez/vite — full reference
+
+> A drop-in Vite plugin for SPA workflows. This is the concatenated reference; load `llms.txt` for the structured index instead.
+
+## Install
+
+```sh
+yarn add -D @mongez/vite
+# peer: vite >= 5.0.0
+```
+
+## Public exports
+
+```ts
+import mongezVite from "@mongez/vite";
+import type { MongezViteOptions } from "@mongez/vite";
+```
+
+That's the surface — a default export (the plugin factory) and a single named type.
+
+## The factory
+
+```ts
+function mongezVite(options?: MongezViteOptions): PluginOption
+```
+
+Returns a Vite plugin with:
+
+- `name: "mongez-vite"`
+- A `config` hook that mutates `UserConfig` in place
+- A `transformIndexHtml` hook that runs env-token replacement
+- A `writeBundle` hook (declared `sequential: true`) that emits `.htaccess` and zips the build
+
+## Options
+
+```ts
+type MongezViteOptions = {
+  baseUrl?: string;
+  envBaseUrlKey?: string;
+  productionEnvName?: string;
+  htmlEnvPrefix?: string;
+  htmlEnvSuffix?: string;
+  autoOpenBrowser?: boolean;
+  linkTsconfigPaths?: boolean;
+  tsconfigAlias?: boolean;
+  optimizeDeps?: UserConfig["optimizeDeps"];
+  compressBuild?: boolean;
+  compressedFileName?: string | (() => string) | (() => Promise<string>);
+  htaccess?: boolean;
+  preRender?: {
+    crawlers?: string;
+    url?: string;
+    delay?: number;
+    cache?: boolean;
+  } | false;
+};
+```
+
+## Defaults
+
+| Option | Default |
+|---|---|
+| `envBaseUrlKey` | `"PUBLIC_URL"` |
+| `htmlEnvPrefix` | `"__"` |
+| `htmlEnvSuffix` | `"__"` |
+| `autoOpenBrowser` | `true` |
+| `linkTsconfigPaths` | `true` |
+| `tsconfigAlias` | `true` |
+| `compressBuild` | `true` |
+| `compressedFileName` | `"build.zip"` |
+| `htaccess` | `false` |
+| `preRender` | `false` |
+| `optimizeDeps.entries` | `[<cwd>/index.html, <cwd>/src/apps/**/provider.ts]` |
+
+## Env file resolution
+
+The plugin delegates to `@mongez/dotenv`. From `process.cwd()`:
+
+| Command | Search order |
+|---|---|
+| `build` | `.env.production` → `.env.build` → `.env` |
+| `serve` (vite dev) | `.env.development` → `.env.local` → `.env` |
+
+With `productionEnvName: "<name>"` and `command: "build"`:
+
+- Loads `.env.<name>` only. No fallback — returns early if missing.
+
+Loaded values are coerced (`"3000"` → `3000`, `"true"` → `true`, `"null"` → `null`) and written through to `process.env` (which stringifies them) plus `@mongez/dotenv`'s internal store. Read typed values back via `env("KEY")` from `@mongez/dotenv`.
+
+## Production base URL
+
+During `vite build`, the plugin sets `config.base` from `env(envBaseUrlKey)` (default key: `PUBLIC_URL`). The URL is normalised with `rtrim(..., "/") + "/"` so a missing trailing slash is added and multiple trailing slashes collapse to one.
+
+- Build mode + env unset → `config.base = "/"`.
+- Build mode + user already set `config.base` → user value wins.
+- Serve mode → never touched.
+
+## Env-in-HTML interpolation
+
+Every occurrence of `<prefix><KEY><suffix>` in `index.html` is replaced with the typed env value (coerced to string via JS template substitution). Default delimiters are `__`...`__`. Override via `htmlEnvPrefix` / `htmlEnvSuffix`. Tokens for keys not loaded into the env store pass through unchanged.
+
+```html
+<title>__APP_NAME__</title>
+```
+
+## Auto-open browser
+
+During `vite dev` (`serve` command), sets `config.server.open = true` if:
+
+1. The `autoOpenBrowser` option is truthy (default: true), AND
+2. The user has not already set `server.open` to either `true` or `false`.
+
+During `vite build`, the helper is a no-op.
+
+## tsconfig path aliases
+
+Reads `tsconfig.json` from `process.cwd()`. For every entry in `compilerOptions.paths`:
+
+- Strips a trailing `/*` from the find key (e.g. `@/*` → `@`).
+- Resolves the replacement to an absolute path relative to `process.cwd()`.
+- Pushes `{ find, replacement }` onto a vite `resolve.alias` array.
+
+The alias array is installed onto `config.resolve.alias` ONLY if the user has not already declared their own. Both `linkTsconfigPaths` AND `tsconfigAlias` must be truthy.
+
+When `tsconfig.json` is missing or has no `paths`, the helper is a no-op.
+
+## Build zip
+
+`writeBundle` schedules a zip job that:
+
+1. Resolves the output directory from `config.build.outDir` (default `"dist"`).
+2. Resolves the filename from `compressedFileName` (static string, sync function, or async function).
+3. Creates a `.zip` containing the **contents** of the output directory.
+4. Moves the zip back into the output directory.
+
+> **Sharp edge:** the zip is created inside a `setTimeout(..., 1000)`. Vite's `writeBundle` returns before the zip finishes. Tools that run `vite build && next-step` may see the artifact missing.
+
+## `.htaccess` emission
+
+When `htaccess: true`, the plugin writes a bundled `.htaccess` into the output dir. It includes:
+
+- `RewriteEngine On` + `Options +FollowSymLinks -Indexes`.
+- Force HTTPS / strip leading `www.`.
+- SPA-friendly: every URL that isn't an existing file or asset routes to `index.html`.
+- GZIP via `mod_gzip` and `mod_deflate`.
+- 31-day `Expires` headers for assets; 2-hour for HTML.
+- Cache-Control headers per file type.
+
+If `preRender` is set, a `RewriteCond` + `RewriteRule` block is spliced into the htaccess routing crawler user agents to a generated `prerender.php` instead of `index.html`.
+
+## Pre-render
+
+`preRender: { url, crawlers, delay, cache }`:
+
+- `url` — the prerender service to POST to. Default in the README is `https://render.mentoor.io`. **Required if `preRender` is set as an object.** No safe default in code.
+- `crawlers` — pipe-separated regex alternation of user agents. Default in the README is `Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot`. The duplicate trailing `bot` is intentional in the source.
+- `delay` — milliseconds to wait before rendering. Default `5000`.
+- `cache` — when truthy, the generated PHP caches each render under `<outDir>/cache/<sha1(url)>.html`.
+
+Requires `htaccess: true` — the rewrite rule that routes bots to `prerender.php` lives in the `.htaccess`.
+
+## Lifecycle hooks summary
+
+```
+mongezVite(options) returns:
+
+{
+  name: "mongez-vite",
+  config(config, { command }) {
+    resolveAutoOpenBrowser(config, command, options);
+    resolveTsConfigAlias(config, options);
+    resolveEnvironmentVariables(command, options);
+    resolveOtherConfig(config, command, options);
+    return config;
+  },
+  transformIndexHtml(html) {
+    return transformEnvironmentVariablesInHtml(html, options);
+  },
+  writeBundle: {
+    sequential: true,
+    handler: async () => {
+      await generateHtaccess(config, options);
+      await compressBuild(config, options);
+    },
+  },
+}
+```
+
+`config` runs once at startup. `transformIndexHtml` runs per HTML output. `writeBundle` runs once at the end of a build.
+
+## Caveats
+
+- **The plugin never overwrites user-provided config.** Pre-existing `server.open`, `config.base`, `resolve.alias`, and `optimizeDeps` all win. Don't expect the plugin to "fix" a config you set wrong.
+- **`compressBuild` races vite's `writeBundle`.** See above.
+- **`preRender` requires `htaccess: true`.** The PHP file is emitted but unreachable without the rewrite rule.
+- **`process.cwd()` is the only env-file search root.** Run vite from your project root, not from a subdir.
+
+## What this package does NOT do
+
+- **Bundle splitting / chunking / asset transforms** → Vite's built-in tooling.
+- **Service worker / PWA** → use `vite-plugin-pwa`.
+- **Image optimisation** → use `vite-imagetools` or `vite-plugin-imagemin`.
+- **Type-checking** → use `vite-plugin-checker` or run `tsc --noEmit` in parallel.
+- **`.env` parsing logic itself** → that's in `@mongez/dotenv`.
+
+## Related packages
+
+- `@mongez/dotenv` — the underlying loader.
+- `@mongez/fs` — filesystem helpers (`getFile`, `putFile`, `moveFile`).
+- `@mongez/copper` — ANSI colors for build logs.
+- `@mongez/reinforcements` — `rtrim` for the base URL.

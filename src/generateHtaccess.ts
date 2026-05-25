@@ -1,4 +1,4 @@
-import { MongezViteOptions } from ".types";
+import { MongezViteOptions } from "./types";
 import { getFile, putFile } from "@mongez/fs";
 import { colors } from "@mongez/copper";
 import { dirname } from "path";
@@ -29,6 +29,14 @@ export async function generateHtaccess(
   let htaccessFile = getFile(_dirname + "/.htaccess");
 
   if (options.preRender) {
+    if (!options.preRender.url) {
+      throw new Error(
+        "[@mongez/vite] preRender.url is required when preRender is enabled. " +
+          "Pass `preRender: { url: \"https://your-prerender-service.example.com\" }` " +
+          "or set `preRender: false` to disable prerendering."
+      );
+    }
+
     htaccessFile = htaccessFile.replace(
       "# Prerender",
       preprenderContent(options.preRender.crawlers)

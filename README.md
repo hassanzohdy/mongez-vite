@@ -1,156 +1,131 @@
-# Mongez Vite
+# @mongez/vite
 
-Mongez Vite is a vite plugin that helps you to create a vite project with a lot of features with one plugin.
+> A drop-in Vite plugin for SPA workflows: typed env loading with `NODE_ENV`-aware resolution, in-HTML env interpolation, tsconfig path aliasing, auto-open dev server, post-build `.zip` packaging, `.htaccess` generation, and pre-render injection — all from one plugin in `vite.config.ts`.
 
-## Features
+`@mongez/vite` is the build-time companion to the rest of the `@mongez/*` family. The whole package is a single Vite plugin object that wires up six small features. Each is independently opt-in via the options bag — you can take the env loader on its own and disable the rest, or take everything as a single declarative knob.
 
-- ✅ [Autoload Environment Variables](#auto-lad-env-variables)
-- ✅ [Production Base Url](#production-base-url)
-- ✅ [Auto Open Browser](#auto-open-browser)
-- ✅ [Use Env Variables In index.html file](#use-env-variables-in-indexhtml)
-- ✅ [Link tsconfig paths to vite aliases](#link-tsconfig-paths-to-vite)
-- ✅ [Auto compress build directory](#auto-compress-build-directory-contents)
-- ✅ [Auto Generate Htaccess File](#generate-htaccess)
-- ✅ [Auto Inject Pre Render Service](#pre-render-service)
+The plugin is declarative — you bolt it onto `plugins: []` and it mutates the resolved Vite config + adds two lifecycle hooks (`transformIndexHtml`, `writeBundle`). No runtime code ships to the browser.
 
-## Installation
+## Install
 
-`yarn add @mongez/vite`
-
-Or
-
-`npm i @mongez/vite`
-
-## Usage
-
-Just import the plugin and put it in the plugins list.
-
-```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
-
-// https://vitejs.dev/config/
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [mongezVite(), react()],
-  } as UserConfigExport;
-});
+```sh
+yarn add -D @mongez/vite
+# peer dep: vite >= 5.0.0
 ```
 
-## Production Base Url
+## A 30-second tour
 
-You can set the production base url by adding the `PUBLIC_URL` environment variable in your `.env.production` file.
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import mongezVite from "@mongez/vite";
+
+export default defineConfig({
+  plugins: [
+    mongezVite({
+      // 1. Use env values inside index.html as __KEY__ tokens.
+      htmlEnvPrefix: "__",
+      htmlEnvSuffix: "__",
+
+      // 2. Auto-open the browser during `vite dev`.
+      autoOpenBrowser: true,
+
+      // 3. Mirror tsconfig.json `paths` into vite's resolve.alias.
+      linkTsconfigPaths: true,
+
+      // 4. Set production base from env (PUBLIC_URL by default).
+      envBaseUrlKey: "PUBLIC_URL",
+
+      // 5. Post-build: zip the build directory.
+      compressBuild: true,
+      compressedFileName: "my-app.zip",
+
+      // 6. Post-build: emit .htaccess + (optional) prerender.php.
+      htaccess: true,
+      preRender: {
+        url: "https://render.mentoor.io",
+      },
+    }),
+    react(),
+  ],
+});
+```
 
 ```bash
-#.env.production
-PUBLIC_URL=https://example.com
+# .env.production
+PUBLIC_URL=https://cdn.example.com/
+APP_NAME=My App
 ```
 
-You can also set the production base url by adding the `baseUrl` option in the `mongezVite` plugin.
+```html
+<!-- index.html -->
+<title>__APP_NAME__</title>
+```
+
+After `vite build`, `dist/` contains an emitted `.htaccess`, a `prerender.php`, and a `my-app.zip` of everything. `config.base` becomes `https://cdn.example.com/` and `<title>` reads "My App".
+
+## What's in the box
+
+| Feature | Option | Default | What it does |
+|---|---|---|---|
+| Typed env loading | `productionEnvName` | auto-detect | Picks the right `.env.<environment>` file via `@mongez/dotenv`. |
+| Production base URL | `envBaseUrlKey`, `baseUrl` | `PUBLIC_URL` | Sets `config.base` from env during `vite build`. |
+| Env-in-HTML interpolation | `htmlEnvPrefix`, `htmlEnvSuffix` | `__` | Replaces `__KEY__` tokens in `index.html` with env values. |
+| Auto-open browser | `autoOpenBrowser` | `true` | Sets `server.open = true` during `vite dev`. |
+| tsconfig path aliases | `linkTsconfigPaths`, `tsconfigAlias` | both `true` | Mirrors `compilerOptions.paths` into `resolve.alias`. |
+| Build zip | `compressBuild`, `compressedFileName` | on, `build.zip` | Archives the output dir into a single zip after build. |
+| `.htaccess` emit | `htaccess` | `false` | Writes a SPA-friendly `.htaccess` into the output dir. |
+| Pre-render service | `preRender` | `false` | Emits `prerender.php` + rewrite rules for crawler bots. |
+
+## Env loading
+
+Calling `mongezVite()` triggers `@mongez/dotenv` to load the right file for the current command:
+
+| Command | File search order (without `productionEnvName`) |
+|---|---|
+| `vite build` | `.env.production` → `.env.build` → `.env` |
+| `vite dev` (`serve`) | `.env.development` → `.env.local` → `.env` |
+
+Pass `productionEnvName: "stage"` to lock the build-time file to a specific name:
 
 ```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
-
-// https://vitejs.dev/config/
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        baseUrl: "https://example.com",
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
-});
+mongezVite({ productionEnvName: "stage" });
+// → loads only .env.stage during `vite build`
+// → no fallback; if .env.stage is missing the loader is a no-op
 ```
 
-Also you can assign the env variable to the production url by adding the `envBaseUrlKey` option in the `mongezVite` plugin.
+The dotenv parser coerces values: `"3000"` becomes `3000`, `"true"` becomes `true`, `"null"` becomes `null`, quoted strings stay strings. Read the typed values back via `env("KEY")` from `@mongez/dotenv`.
+
+## Production base URL
+
+```bash
+# .env.production
+PUBLIC_URL=https://cdn.example.com
+```
 
 ```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
-
-// https://vitejs.dev/config/
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        envBaseUrlKey: "PUBLIC_URL",
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
-});
+mongezVite();   // PUBLIC_URL is the default key
 ```
 
-## Auto Open Browser
-
-I know this is already a feature in vite, but I wanted to make it automated xD, you can enable or disable it by setting the `autoOpenBrowser` option to `true` or `false` in the plugin options.
+During `vite build` the plugin sets `config.base = "https://cdn.example.com/"` (trailing slash added if missing). To use a different env key:
 
 ```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
-
-// https://vitejs.dev/config/
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        autoOpenBrowser: true,
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
-});
+mongezVite({ envBaseUrlKey: "ASSETS_HOST" });
 ```
 
-## Auto Lad Env Variables
+If the env variable is unset, `config.base` falls back to `"/"`. The plugin does NOT overwrite a base you've already specified in `vite.config.ts`.
 
-By default Mongez Vite will try to load the proper env file based on the available .env file, it will try to find the following:
+## Env variables in `index.html`
 
-In Build mode: it will try to find `.env.production` file, if not found it will try to find `.env.build` file, if not found it will try to find `.env` file.
-
-In Development mode: it will try to find `.env.development` file, if not found it will try to find `.env` file.
-
-However, you can specify the production env name, (**just the name of the file without the extension**) by adding `productionEnvName` property to the plugin options.
-
-```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
-
-// https://vitejs.dev/config/
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        productionEnvName: "production",
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
-});
-```
-
-This will make the plugin to load `.env.production` file in build mode.
-
-## Use Env Variables In index.html
-
-You can use env variables in your index.html file, just add the env variables in your .env file and use them in your index.html file.
+Reference any env value in HTML with the affix delimiters (default `__`):
 
 ```html
 <!DOCTYPE html>
-<html lang="__APP_DEFAULT_LOCALE_CODE__" dir="__APP_DEFAULT_DIRECTION__">
+<html lang="__APP_DEFAULT_LOCALE__" dir="__APP_DEFAULT_DIRECTION__">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="__APP_FAV_ICON__" />
-    <link rel="apple-touch-icon" href="__APP_FAV_ICON__" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="__APP_PRIMARY_COLOR__" />
     <meta name="description" content="__APP_DESCRIPTION__" />
     <title>__APP_NAME__</title>
@@ -162,166 +137,273 @@ You can use env variables in your index.html file, just add the env variables in
 </html>
 ```
 
-Here we can use any .env variable in our index.html file, just prefix the variable with `__` and suffix it with `__` and you're done!
-
-You can define env prefix and suffix in the plugin options.
+Customize the delimiters via `htmlEnvPrefix` / `htmlEnvSuffix`:
 
 ```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
-
-// https://vitejs.dev/config/
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        envPrefix: "__",
-        envSuffix: "__",
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
+mongezVite({
+  htmlEnvPrefix: "{{",
+  htmlEnvSuffix: "}}",
 });
 ```
 
-> Be aware of tags that have a url such as `link` and `script` tags, do not use prefix like % or $, this will result an error from vite as it can not parse it as valid url characters.
+> Avoid `%` or `$` inside `<link>` and `<script>` `href` / `src` attributes — Vite's HTML transform parses those as URLs first and trips on unrecognized characters. Stick with `__KEY__` or `{{KEY}}`.
 
-## Link Tsconfig paths to vite
-
-By default Mongez Vite will try to load all `paths` in `tsconfig.json` file automatically, however, you can disable this feature by setting `linkTsconfigPaths` option to `false`.
+## Auto-open browser
 
 ```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
+mongezVite({ autoOpenBrowser: true });   // default — opens during `vite dev`
+mongezVite({ autoOpenBrowser: false });  // dev server stays quiet
+```
 
-// https://vitejs.dev/config/
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        linkTsconfigPaths: false,
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
+The plugin sets `server.open = true` ONLY during the `serve` command, and ONLY if you haven't already declared `server.open` yourself. Explicitly setting `server.open: false` in your `vite.config.ts` always wins.
+
+## tsconfig path aliases
+
+`@mongez/vite` reads your `tsconfig.json`'s `compilerOptions.paths` and mirrors them into `resolve.alias`:
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "components/*": ["src/components/*"]
+    }
+  }
+}
+```
+
+```ts
+// vite.config.ts
+mongezVite({ linkTsconfigPaths: true }); // default
+```
+
+Now `import App from "@/App"` and `import Button from "components/Button"` work in both `tsc` and Vite.
+
+Set `linkTsconfigPaths: false` to skip — useful if you already have your own `vite-tsconfig-paths` plugin or want to drive `resolve.alias` by hand:
+
+```ts
+mongezVite({ linkTsconfigPaths: false });
+```
+
+The plugin does NOT overwrite a pre-existing `resolve.alias` you've set in `vite.config.ts`. If you mix the two, your own aliases win.
+
+## Build zip
+
+```ts
+mongezVite({ compressBuild: true });           // default — emits dist/build.zip
+mongezVite({ compressBuild: false });          // skip
+mongezVite({ compressedFileName: "myapp.zip" });
+mongezVite({
+  compressedFileName: () => `myapp-${Date.now()}.zip`,
 });
 ```
 
-> Please note this feature sets the `resolve.alias` option in vite, so if you set this option in your vite config, it will be disabled by default, it's recommended to use only tsconfig paths.
-
-## Auto Compress Build Directory Contents
-
-By default Mongez Vite will compress the build directory contents, however, you can disable this feature by setting `compressBuild` option to `false`.
+The zip contains the **contents** of the output directory (not the directory itself), and is placed back inside the output directory once built. Pass an async function if your filename needs an external lookup:
 
 ```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
-
-// https://vitejs.dev/config/
-
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        compressBuild: false,
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
+mongezVite({
+  compressedFileName: async () => {
+    const tag = await readVersionTag();
+    return `myapp-${tag}.zip`;
+  },
 });
 ```
 
-The generated zip file will be named as `build.zip` and will be located in the `dist` directory of your project or in the `buildDir` directory if you set it in the config options.
-
-However, you can change the compressed file name by setting `compressedFileName` option to the desired name.
+## `.htaccess` generation
 
 ```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
+mongezVite({ htaccess: true });   // emits dist/.htaccess
+```
 
-// https://vitejs.dev/config/
+The bundled `.htaccess` includes:
 
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
-import mongezVite from "@mongez/vite";
+- `RewriteEngine On` + `Options +FollowSymLinks -Indexes`.
+- Force HTTPS / strip leading `www.`.
+- SPA-friendly rewrite: every URL that isn't a real file or asset extension routes to `index.html`.
+- GZIP via `mod_gzip` and `mod_deflate`.
+- 31-day `Expires` headers for `jpg`/`png`/`css`/`js`.
+- Cache-Control headers per file type.
 
-// https://vitejs.dev/config/
+Defaults to **disabled**. Opt in explicitly with `htaccess: true`.
 
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        compressBuild: true,
-        compressedFileName: "my-app.zip",
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
+## Pre-render service
+
+For SEO-sensitive SPAs, route bot traffic through a pre-rendering server. The plugin emits a `prerender.php` and adds a `RewriteRule` to the `.htaccess` so crawlers get fully-rendered HTML:
+
+```ts
+mongezVite({
+  htaccess: true,         // required — prerender lives in .htaccess
+  preRender: {
+    url: "https://render.mentoor.io",
+    crawlers: "Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter",
+    delay: 5000,
+    cache: false,
+  },
 });
 ```
 
-> Only the directory contents will be in the zip file not the directory itself.
+The PHP file calls out to the prerender URL with the visited path, the requesting user agent, and the two flags above. Cached responses (when `cache: true`) live under a `cache/` directory next to `prerender.php`.
 
-## Generate .htaccess
+Set `preRender: false` to skip entirely (the default).
 
-If you're using Apache server, you can generate .htaccess file by setting `htaccess` option to `true`, which is `true` by default.
+## Full options reference
 
 ```ts
+type MongezViteOptions = {
+  /** Production base URL — passed verbatim to vite's `config.base`. */
+  baseUrl?: string;
+  /** Env key the plugin reads to derive `config.base` during build. Default: "PUBLIC_URL". */
+  envBaseUrlKey?: string;
+  /** Locks the env file picker to `.env.<name>` during build. No fallback. */
+  productionEnvName?: string;
+  /** Prefix delimiter for `__KEY__`-style tokens in index.html. Default: "__". */
+  htmlEnvPrefix?: string;
+  /** Suffix delimiter for `__KEY__`-style tokens in index.html. Default: "__". */
+  htmlEnvSuffix?: string;
+  /** Set `server.open = true` during `vite dev`. Default: true. */
+  autoOpenBrowser?: boolean;
+  /** Mirror tsconfig paths into vite's resolve.alias. Default: true. */
+  linkTsconfigPaths?: boolean;
+  /** Tied to `linkTsconfigPaths`; both must be truthy. Default: true. */
+  tsconfigAlias?: boolean;
+  /** Replace vite's optimizeDeps.entries with this list. */
+  optimizeDeps?: UserConfig["optimizeDeps"];
+  /** Zip the output directory after build. Default: true. */
+  compressBuild?: boolean;
+  /** Name for the emitted zip. Sync, async, or static string. Default: "build.zip". */
+  compressedFileName?: string | (() => string) | (() => Promise<string>);
+  /** Emit a SPA-friendly .htaccess to the output dir. Default: false. */
+  htaccess?: boolean;
+  /** Pre-render service config. False to skip. Default: false. */
+  preRender?: {
+    crawlers?: string;
+    url?: string;
+    delay?: number;
+    cache?: boolean;
+  } | false;
+};
+```
+
+## Caveats
+
+- **Pre-render requires `htaccess: true`.** Without it the rewrite rule has nowhere to live.
+- **Pre-render requires `preRender.url`.** If you opt into `preRender` without a `url`, the plugin throws during the build with a clear error message. Pass `preRender: false` to disable entirely.
+- **`.env.production` loaded values write through to `process.env`.** `@mongez/dotenv` defaults to `override: true`. Read typed values back through `env("KEY")` from `@mongez/dotenv`; reading `process.env.KEY` always gives you the string-coerced form.
+- **Option names use the `htmlEnv*` prefix.** Older revisions of this README documented `envPrefix` / `envSuffix`, but the runtime reads `htmlEnvPrefix` / `htmlEnvSuffix`. The latter is the source of truth.
+
+## Examples
+
+### Minimal SPA setup
+
+```ts
+// vite.config.ts
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
 import mongezVite from "@mongez/vite";
 
-// https://vitejs.dev/config/
-
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        htaccess: true,
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
+export default defineConfig({
+  plugins: [
+    mongezVite(),   // everything default-on except htaccess + preRender
+    react(),
+  ],
 });
 ```
 
-## Pre Render Service
+```bash
+# .env.development
+APP_NAME="My App"
+APP_PORT=3000
 
-SEO is very important to any website, and if you're application is SPA and using client side rendering, you can use the pre-render service to generate static html files for each route in your application when a crawler visits your website.
+# .env.production
+APP_NAME="My App"
+PUBLIC_URL=https://cdn.example.com/
+```
 
-If your project has a pre render server that renders the pages and returns the html, you can set the pre-render service url that will be called when a crawler visits your website.
+### Production CDN base URL via env
 
 ```ts
-import react from "@vitejs/plugin-react";
-import { defineConfig, UserConfigExport } from "vite";
+// vite.config.ts
 import mongezVite from "@mongez/vite";
 
-// https://vitejs.dev/config/
-
-export default defineConfig((): UserConfigExport => {
-  return {
-    plugins: [
-      mongezVite({
-        preRender: {
-          url: "https://my-pre-render-server.com",
-          crawlers:
-            "Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot",
-        },
-      }),
-      react(),
-    ],
-  } as UserConfigExport;
+export default defineConfig({
+  plugins: [
+    mongezVite({
+      envBaseUrlKey: "CDN_HOST",
+    }),
+  ],
 });
 ```
 
-Here we set the pre render service url and crawlers that will be used to detect if the request is from a crawler or not.
+```bash
+# .env.production
+CDN_HOST=https://assets.example.com
+```
 
-This feature requires .htaccess to be enabled, also it will generate a `prerender.php` file in the `dist` directory of your project, which will be call the pre-render service url and return the html to the crawler.
+Result: `vite build` writes assets with `https://assets.example.com/` as the base.
 
-> For the time being, there is already an injected pre render service in the package which is `https://render.mentoor.io` that receives the url that should be rendered and returns the html, however, you can use your own pre-render service by setting the `url` option.
+### Apache deployment with .htaccess + prerender
 
-To disable pre render service, just set `preRender` option to `false`.
+```ts
+mongezVite({
+  htaccess: true,
+  preRender: {
+    url: "https://render.mentoor.io",
+    cache: true,
+  },
+});
+```
+
+After `vite build`:
+
+```
+dist/
+├── assets/
+│   └── ...
+├── index.html
+├── .htaccess          (SPA rewrites + Googlebot routing)
+├── prerender.php
+└── build.zip
+```
+
+Drop `dist/` onto an Apache host and SPA routing + crawler pre-rendering work without extra config.
+
+### Multi-stage builds
+
+```ts
+mongezVite({
+  productionEnvName: process.env.STAGE,   // "staging" → .env.staging
+});
+```
+
+```sh
+STAGE=staging vite build   # loads .env.staging
+STAGE=preprod vite build   # loads .env.preprod
+```
+
+### Disable everything except env loading
+
+```ts
+mongezVite({
+  autoOpenBrowser: false,
+  linkTsconfigPaths: false,
+  compressBuild: false,
+  htaccess: false,
+});
+```
+
+The plugin reduces to "load the right `.env` file, set `config.base`, and replace `__KEY__` tokens in `index.html`."
+
+## Related packages
+
+| Package | Purpose |
+|---|---|
+| [`@mongez/dotenv`](https://github.com/hassanzohdy/mongez-dotenv) | The underlying `.env` loader. Used here to read env files. |
+| [`@mongez/fs`](https://github.com/hassanzohdy/mongez-fs) | Synchronous filesystem helpers (`getFile`, `putFile`). Used to read tsconfig + write `.htaccess`. |
+| [`@mongez/copper`](https://github.com/hassanzohdy/mongez-copper) | ANSI color helpers for log output. |
+| [`@mongez/reinforcements`](https://github.com/hassanzohdy/reinforcements) | TypeScript utility belt. `rtrim` is used to normalise the base URL. |
+
+## License
+
+MIT

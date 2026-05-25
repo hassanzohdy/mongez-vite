@@ -1,0 +1,40 @@
+# @mongez/vite
+
+> A drop-in Vite plugin for SPA workflows. Loads the right `.env.<environment>` file via `@mongez/dotenv`, interpolates env values into `index.html`, mirrors tsconfig `paths` into `resolve.alias`, opens the browser during dev, sets `config.base` from env during build, zips the output dir after build, and optionally emits a SPA-friendly `.htaccess` + a `prerender.php` for crawler routing.
+
+The whole package is a single Vite plugin object. You bolt it onto `plugins: []` and it mutates the resolved Vite config + adds two lifecycle hooks (`transformIndexHtml`, `writeBundle`). No runtime code ships to the browser.
+
+## Docs
+
+- [Overview](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/overview.md): Pitch, install, mental model, scope boundaries.
+- [README](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/README.md): Marketing-style index with `vite.config.ts` snippets per feature.
+- [Changelog](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/CHANGELOG.md): Release notes.
+
+## Reference (by feature)
+
+- [Env loading](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/env-loading.md): `.env.<environment>` file resolution per command, `productionEnvName`, behavior of @mongez/dotenv's coercion + `process.env` write-through.
+- [Env in HTML](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/env-in-html.md): `__KEY__` token replacement in `index.html`, `htmlEnvPrefix` / `htmlEnvSuffix`, gotchas with URL attributes.
+- [Production base URL](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/production-base-url.md): `envBaseUrlKey`, trailing-slash normalisation, build-only behaviour, no-overwrite semantics.
+- [tsconfig aliases](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/tsconfig-aliases.md): Mirroring `compilerOptions.paths` into `resolve.alias`, `/*` glob handling, opt-out via `linkTsconfigPaths`.
+- [Auto-open browser](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/auto-open-browser.md): `server.open` during `vite dev`, respect for explicit user settings.
+- [Build zip](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/build-zip.md): `compressBuild`, static / sync / async `compressedFileName`, output location, the `setTimeout` race.
+- [.htaccess](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/htaccess.md): SPA rewrite rules, force-HTTPS, GZIP, cache headers; what the bundled template covers.
+- [Pre-render](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/prerender.md): `prerender.php` template, crawler list, cache flag, delay, the dependency on `htaccess: true`.
+
+## Recipes
+
+- [Recipes](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/recipes.md): Worked `vite.config.ts` integrations — minimal SPA, CDN base via env, Apache + prerender, multi-stage builds, env-only mode.
+
+## Quick rules
+
+1. **One plugin call.** `mongezVite(options)` returns a single Vite `PluginOption`. Add it once to `plugins: []`.
+2. **Defaults are sensible for SPA dev**, **opt-in for SPA prod-ops.** `autoOpenBrowser`, `linkTsconfigPaths`, `compressBuild` default on. `htaccess`, `preRender` default OFF.
+3. **Env files are picked from `process.cwd()`.** During `vite build` the order is `.env.production` → `.env.build` → `.env`. During `vite dev` (`serve`) it's `.env.development` → `.env.local` → `.env`. Set `productionEnvName` to lock the build file.
+4. **`config.base` is set from env during build.** Default key is `PUBLIC_URL`. Override via `envBaseUrlKey`. The plugin does NOT touch a user-provided `config.base`.
+5. **The plugin never overwrites user-provided config.** `server.open`, `config.base`, `resolve.alias`, and `optimizeDeps` are all set only if the user hasn't already.
+6. **Pre-render needs `htaccess: true`.** The rewrite rule lives inside the `.htaccess`; without it the prerender PHP has nothing routing to it.
+
+## Optional
+
+- [Full single-file reference (llms-full.txt)](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/llms-full.txt): All reference content concatenated.
+- [GitHub repository](https://github.com/hassanzohdy/mongez-vite): Source code, issues, releases.
