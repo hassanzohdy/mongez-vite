@@ -182,7 +182,7 @@ describe("previously known bugs (now fixed)", () => {
       "utf-8",
     );
     const skill = fs.readFileSync(
-      path.join(__dirname, "..", "..", "skills", "env-in-html.md"),
+      path.join(__dirname, "..", "..", "skills", "env-in-html", "SKILL.md"),
       "utf-8",
     );
 
@@ -192,7 +192,7 @@ describe("previously known bugs (now fixed)", () => {
     expect(skill).toContain("htmlEnvPrefix");
     expect(skill).toContain("htmlEnvSuffix");
 
-    // skills/env-in-html.md should NOT mention the legacy names at all.
+    // skills/env-in-html/SKILL.md should NOT mention the legacy names at all.
     expect(skill).not.toMatch(/\benvPrefix\b/);
     expect(skill).not.toMatch(/\benvSuffix\b/);
   });
