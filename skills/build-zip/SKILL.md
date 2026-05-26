@@ -83,35 +83,9 @@ export default defineConfig({
 // → produces build/build.zip
 ```
 
-## Sharp edge: the setTimeout race
+## Awaited writeBundle
 
-`compressBuild`'s implementation wraps its work in a `setTimeout(..., 1000)` and returns immediately. Vite considers the `writeBundle` handler done before the zip exists.
-
-```ts
-// Inside compressBuild:
-setTimeout(async () => {
-  // ... archive.pipe(output); await archive.finalize(); moveFile(...);
-}, 1000);
-```
-
-Consequences:
-- A wrapper script that runs `vite build && upload.sh` may shell out before the zip is finalised, picking up either a partial file or nothing.
-- Test runners that mock the filesystem won't see the writes.
-
-Workarounds:
-
-```sh
-# 1. Sleep before the next step.
-vite build && sleep 3 && upload.sh
-
-# 2. Watch for the file to settle.
-vite build && wait-for-file dist/build.zip && upload.sh
-
-# 3. Don't use compressBuild; zip yourself.
-vite build && cd dist && zip -r build.zip ./*
-```
-
-This bug is documented in `src/__tests__/known-bugs.test.ts`.
+`compressBuild` runs inside Vite's `writeBundle` hook with `sequential: true` and awaits the archive pipeline directly. By the time `vite build` exits, `<outDir>/<filename>` is on disk and chained scripts (`vite build && upload.sh`) see the finalised zip.
 
 ## What's inside the zip
 
@@ -123,7 +97,7 @@ Everything Vite emitted into `outDir`, including:
 - The `.htaccess` (if `htaccess: true` ran first)
 - The `prerender.php` (if `preRender` is set)
 
-The zip itself is added to `outDir` after Vite finishes, but because of the setTimeout the zip does NOT contain itself — it captures the output dir state from before the move.
+The zip itself is created at `<cwd>/<filename>` (outside `outDir`) and then moved into `outDir` after the archive finalises, so the zip does NOT contain itself — it captures the output-dir state from before the move.
 
 ## Gotchas
 

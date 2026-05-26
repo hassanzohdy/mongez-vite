@@ -268,15 +268,13 @@ STAGE=${1:-production}
 # Build with the matching .env file
 STAGE=$STAGE vite build
 
-# Wait out the compressBuild setTimeout race (see build-zip.md)
-sleep 3
-
-# Ship the zip
+# Ship the zip — compressBuild awaits the archive pipeline inside writeBundle,
+# so by the time `vite build` exits, dist/build.zip is finalised on disk.
 scp dist/build.zip server:/var/www/$STAGE-staging.zip
 ssh server "cd /var/www && unzip -o $STAGE-staging.zip -d $STAGE"
 ```
 
-Or, if you don't trust the setTimeout race, disable `compressBuild` and zip yourself:
+If you'd rather zip the output dir yourself (different archive format, additional files, etc.), disable `compressBuild`:
 
 ```ts
 mongezVite({ compressBuild: false });

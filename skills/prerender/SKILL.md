@@ -136,7 +136,7 @@ A request from a real user agent (`Mozilla/...`):
 
 ## Sharp edges
 
-- **`preRender.url` has no default in code.** The README documents `https://render.mentoor.io` as the implicit default, but `defaultOptions.ts` has `preRender: false`. If you set `preRender: {}` without `url`, the generated PHP embeds the literal string `undefined` as the service URL. Always set `url` explicitly. (Documented as a known bug.)
+- **`preRender.url` is required when `preRender` is enabled.** `defaultOptions.ts` has `preRender: false`, and there is no implicit default for `url`. If you set `preRender: {}` without `url`, `generateHtaccess()` throws a descriptive build-time error (`preRender.url is required when preRender is enabled`). Always set `url` explicitly.
 - **Requires `htaccess: true`.** The PHP is emitted regardless, but without the rewrite rule it sits there unreachable.
 - **No Apache means no prerender.** This pipeline is Apache-specific (`.htaccess` + PHP). Nginx / Caddy hosts need a different strategy.
 - **The cache directory is created lazily** by the PHP. Make sure the web server has write permission to `<outDir>/cache/`.

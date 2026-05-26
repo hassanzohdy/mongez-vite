@@ -114,4 +114,4 @@ If a key appears in both, the environment-specific file wins.
 - **`process.cwd()` is the only resolution root.** Run `vite` from the project root; from a subdirectory the files won't be found.
 - **No fallback when `productionEnvName` is set.** If you set `productionEnvName: "staging"` and forget to create `.env.staging`, the loader silently does nothing.
 - **No event when the load completes.** The plugin loads env files inside the `config` hook, which runs once. After that, env values are static until the next vite restart.
-- **The `env()` helper collapses `null` to `undefined`.** A deliberately-loaded `null` value reads back as `undefined` via `env(key)`. Use `env.all()[key]` if you need the literal stored value. (Documented as a known bug in `@mongez/dotenv`.)
+- **`env()` preserves a deliberately-loaded `null`.** `@mongez/dotenv`'s `env()` uses `key in envData` rather than `??`, so a value of literal `null` reads back as `null` (not the supplied default). If you only want the default when the key is missing, that behaviour is now correct.

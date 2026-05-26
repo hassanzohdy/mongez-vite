@@ -23,7 +23,7 @@ For Apache-hosted SPAs, you need a `.htaccess` that:
 mongezVite();   // htaccess: false (opt-in)
 ```
 
-The README claims `htaccess: true` is the default; the actual default in code is `false`. You have to opt in explicitly.
+The default is `false` — you have to opt in explicitly.
 
 ## Opting in
 
