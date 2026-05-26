@@ -37,7 +37,7 @@ jobs:
       # and lets imports resolve from `node_modules` instead. So `yarn
       # install` is enough to make the test run hermetic.
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install
 
       - name: Run tests
         run: yarn test

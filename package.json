@@ -1,6 +1,6 @@
 {
   "name": "@mongez/vite",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Drop-in Vite plugin for SPA workflows: typed env loading with NODE_ENV-aware resolution, in-HTML env interpolation, tsconfig path aliasing, auto-open dev server, post-build zip, .htaccess generation, and pre-render integration.",
   "main": "src/index.ts",
   "sideEffects": false,
