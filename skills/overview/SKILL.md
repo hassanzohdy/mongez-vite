@@ -1,7 +1,9 @@
 ---
 name: mongez-vite-overview
-description: High-level architecture and mental model of the @mongez/vite Vite plugin — what it does, what it bundles, and how its two-phase lifecycle works.
-when_to_use: User imports from @mongez/vite, user is setting up mongezVite() for the first time, user asks what @mongez/vite does or what features it includes, user wants to understand the plugin's lifecycle or scope boundaries.
+description: |
+  High-level architecture and mental model of the @mongez/vite Vite plugin — what it does, what it bundles, and how its two-phase lifecycle works.
+  TRIGGER when: code imports `mongezVite` (default export) or type `MongezViteOptions` from `@mongez/vite`; user asks "what does @mongez/vite do", "how do I set up mongezVite in Vite", "what features does this plugin include"; `vite.config.ts` / `vite.config.js` registers `mongezVite()` in `plugins: []` for the first time, or user wants the lifecycle / scope-boundary picture before diving in.
+  SKIP: feature-specific tasks already covered by sibling skills (`mongez-vite-env-loading`, `mongez-vite-env-in-html`, `mongez-vite-production-base-url`, `mongez-vite-tsconfig-aliases`, `mongez-vite-auto-open-browser`, `mongez-vite-build-zip`, `mongez-vite-htaccess`, `mongez-vite-prerender`, `mongez-vite-recipes`); generic Vite plugin authoring not involving `@mongez/vite`; non-Vite bundlers (Webpack, Rollup, esbuild standalone).
 ---
 
 # Overview

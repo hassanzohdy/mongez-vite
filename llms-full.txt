@@ -74,6 +74,9 @@ type MongezViteOptions = {
 
 ## Env file resolution
 
+> **Auto-trigger:** code configures `mongezVite({ productionEnvName: ... })` in `vite.config.ts` / `vite.config.js`, or imports `env` from `@mongez/dotenv` alongside `mongezVite` usage; user asks "how do I load .env in Vite with mongezVite", "how do I switch between .env.staging / .env.production at build time", "why is my .env not loading"; project has `.env.shared` / `.env.production` / `.env.development` / `.env.build` / `.env.local` files plus `mongezVite()` registered.
+> **Skip when:** in-HTML token replacement (use `mongez-vite-env-in-html`); deriving `config.base` from env (use `mongez-vite-production-base-url`); raw `@mongez/dotenv` usage with no `mongezVite()` plugin in the config; Vite's built-in `loadEnv` / `import.meta.env.VITE_*` without `@mongez/vite`; generic dotenv libraries (`dotenv`, `dotenv-flow`).
+
 The plugin delegates to `@mongez/dotenv`. From `process.cwd()`:
 
 | Command | Search order |
@@ -89,6 +92,9 @@ Loaded values are coerced (`"3000"` → `3000`, `"true"` → `true`, `"null"` �
 
 ## Production base URL
 
+> **Auto-trigger:** code passes `envBaseUrlKey` (or relies on the default `PUBLIC_URL`) to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; `.env.production` / `.env.<stage>` declares `PUBLIC_URL` or a custom CDN key alongside `mongezVite()` registered; user asks "how do I set Vite's base URL from env", "why do production assets load from the wrong origin / 404 from `/assets/...`", "how do I deploy a Vite SPA behind a CDN or subpath".
+> **Skip when:** dev-server base behaviour (the plugin never touches `config.base` during `serve`); hand-setting `base` in `vite.config.ts` (the plugin defers to that); `MongezViteOptions.baseUrl` (currently informational — set `base` on the Vite config directly); env file resolution itself (use `mongez-vite-env-loading`).
+
 During `vite build`, the plugin sets `config.base` from `env(envBaseUrlKey)` (default key: `PUBLIC_URL`). The URL is normalised with `rtrim(..., "/") + "/"` so a missing trailing slash is added and multiple trailing slashes collapse to one.
 
 - Build mode + env unset → `config.base = "/"`.
@@ -96,6 +102,9 @@ During `vite build`, the plugin sets `config.base` from `env(envBaseUrlKey)` (de
 - Serve mode → never touched.
 
 ## Env-in-HTML interpolation
+
+> **Auto-trigger:** code passes `htmlEnvPrefix` or `htmlEnvSuffix` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; `index.html` contains `__KEY__`-style tokens (or custom-delimited `{{KEY}}` / `<!--KEY-->` shapes) paired with `mongezVite()` in `plugins: []`; user asks "how do I inject env values into index.html", "why are my `__APP_NAME__` tokens not being replaced", "how do I change the env token delimiters in HTML".
+> **Skip when:** env file resolution / `productionEnvName` (use `mongez-vite-env-loading`); reading env values at runtime in the browser (that's Vite's `import.meta.env.VITE_*`, not `@mongez/vite`); HTML transforms unrelated to env tokens; generic templating engines (EJS, Handlebars) not driven by `mongezVite`.
 
 Every occurrence of `<prefix><KEY><suffix>` in `index.html` is replaced with the typed env value (coerced to string via JS template substitution). Default delimiters are `__`...`__`. Override via `htmlEnvPrefix` / `htmlEnvSuffix`. Tokens for keys not loaded into the env store pass through unchanged.
 
@@ -105,6 +114,9 @@ Every occurrence of `<prefix><KEY><suffix>` in `index.html` is replaced with the
 
 ## Auto-open browser
 
+> **Auto-trigger:** code passes `autoOpenBrowser` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; `vite.config.ts` has both `server: { open: ... }` and `mongezVite()` and the user wants to reconcile them; user asks "how do I stop Vite from auto-opening the browser with mongezVite", "why does my browser open / not open on `vite dev`", "how does mongezVite interact with `server.open`".
+> **Skip when:** pure Vite `server.open` configuration with no `@mongez/vite` plugin in scope; opening a specific path on dev start (the plugin clobbers the string form — user should set `autoOpenBrowser: false`); HMR / dev-server port / host issues; production-build behaviour (the helper short-circuits during `build`).
+
 During `vite dev` (`serve` command), sets `config.server.open = true` if:
 
 1. The `autoOpenBrowser` option is truthy (default: true), AND
@@ -113,6 +125,9 @@ During `vite dev` (`serve` command), sets `config.server.open = true` if:
 During `vite build`, the helper is a no-op.
 
 ## tsconfig path aliases
+
+> **Auto-trigger:** code passes `linkTsconfigPaths` or `tsconfigAlias` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; project has `tsconfig.json` with `compilerOptions.paths` (e.g. `"@/*": ["src/*"]`) alongside `mongezVite()` registered; user asks "why do my `@/...` imports work in tsc but fail in Vite", "how do I sync tsconfig paths with Vite aliases", "how does mongezVite handle `resolve.alias`".
+> **Skip when:** third-party path-alias plugins like `vite-tsconfig-paths` not paired with `@mongez/vite`; hand-written `resolve.alias` arrays in `vite.config.ts` (the plugin defers to those); Webpack / Jest `moduleNameMapper` path resolution; tsconfig `references` / project-references setup.
 
 Reads `tsconfig.json` from `process.cwd()`. For every entry in `compilerOptions.paths`:
 
@@ -126,6 +141,9 @@ When `tsconfig.json` is missing or has no `paths`, the helper is a no-op.
 
 ## Build zip
 
+> **Auto-trigger:** code passes `compressBuild` or `compressedFileName` (string / sync / async function) to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; deploy script chains `vite build && <something with dist/build.zip>`; user asks "how do I zip Vite output for deploy", "why is `dist/build.zip` missing or partial after `vite build`", "how do I name the zip per git tag / build number".
+> **Skip when:** `.htaccess` generation (use `mongez-vite-htaccess`); prerender PHP emission (use `mongez-vite-prerender`); other archive formats like `.tar.gz` (this plugin emits zip only — script it yourself); generic Node zip libraries (`archiver`, `adm-zip`) used without `@mongez/vite`.
+
 `writeBundle` schedules a zip job that:
 
 1. Resolves the output directory from `config.build.outDir` (default `"dist"`).
@@ -136,6 +154,9 @@ When `tsconfig.json` is missing or has no `paths`, the helper is a no-op.
 > **Sharp edge:** the zip is created inside a `setTimeout(..., 1000)`. Vite's `writeBundle` returns before the zip finishes. Tools that run `vite build && next-step` may see the artifact missing.
 
 ## `.htaccess` emission
+
+> **Auto-trigger:** code passes `htaccess: true` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; project deploys a Vite SPA to Apache and ships a `.htaccess` with `RewriteEngine On` / SPA fallback rules; user asks "how do I generate `.htaccess` for my Vite SPA", "what's inside the mongezVite `.htaccess` template", "how do I add SPA rewrite rules / force HTTPS / GZIP on Apache".
+> **Skip when:** prerender PHP and the crawler rewrite that lives inside `.htaccess` (use `mongez-vite-prerender`); Nginx / Caddy / Cloudflare Workers SPA routing (Apache-specific); customising cache headers per filetype beyond what the bundled template ships (post-process the emitted file); raw `.htaccess` authoring with no `mongezVite()` plugin in the config.
 
 When `htaccess: true`, the plugin writes a bundled `.htaccess` into the output dir. It includes:
 
@@ -149,6 +170,9 @@ When `htaccess: true`, the plugin writes a bundled `.htaccess` into the output d
 If `preRender` is set, a `RewriteCond` + `RewriteRule` block is spliced into the htaccess routing crawler user agents to a generated `prerender.php` instead of `index.html`.
 
 ## Pre-render
+
+> **Auto-trigger:** code passes a `preRender: { url, crawlers?, delay?, cache? }` object to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; project pairs `htaccess: true` with bot/SEO crawler concerns (Googlebot, facebookexternalhit, WhatsApp, Slack, Twitter); user asks "how do I prerender for crawlers in a Vite SPA", "how does the `prerender.php` work / what does it do", "how do I route bots to a render service like render.mentoor.io".
+> **Skip when:** the `.htaccess` template itself (use `mongez-vite-htaccess` — note `preRender` requires `htaccess: true`); Nginx / non-Apache prerender pipelines (this emits a PHP file gated by `.htaccess` rewrites); SSR frameworks like Next.js / Remix / vite-plugin-ssr; client-side hydration concerns.
 
 `preRender: { url, crawlers, delay, cache }`:
 

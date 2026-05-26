@@ -1,7 +1,9 @@
 ---
 name: mongez-vite-recipes
-description: Ready-to-use vite.config.ts compositions for common @mongez/vite scenarios including minimal SPA setup, CDN base URL, Apache deploy with prerender, multi-stage builds, and more.
-when_to_use: User wants a working example or starting-point config for @mongez/vite, user is combining multiple mongezVite() features and needs a reference, user is setting up multi-stage builds, custom zip names, layered env files, or an Apache deploy pipeline.
+description: |
+  Ready-to-use vite.config.ts compositions for common @mongez/vite scenarios including minimal SPA setup, CDN base URL, Apache deploy with prerender, multi-stage builds, and more.
+  TRIGGER when: user wants a working starting-point `vite.config.ts` / `vite.config.js` that composes `mongezVite()` with multiple options (`htaccess`, `preRender`, `productionEnvName`, `envBaseUrlKey`, `compressedFileName`, `htmlEnvPrefix`/`htmlEnvSuffix`, `linkTsconfigPaths`); user asks "give me a `vite.config.ts` example for @mongez/vite", "how do I set up multi-stage builds with mongezVite", "show me an Apache deploy pipeline with mongezVite + prerender + zip".
+  SKIP: single-feature deep dives — route to the matching feature skill instead (`mongez-vite-env-loading`, `mongez-vite-env-in-html`, `mongez-vite-production-base-url`, `mongez-vite-build-zip`, `mongez-vite-htaccess`, `mongez-vite-prerender`, `mongez-vite-tsconfig-aliases`, `mongez-vite-auto-open-browser`); first-time orientation (use `mongez-vite-overview`); generic Vite config recipes not involving `@mongez/vite`.
 ---
 
 # Recipes

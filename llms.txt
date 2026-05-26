@@ -7,23 +7,33 @@ The whole package is a single Vite plugin object. You bolt it onto `plugins: []`
 ## Docs
 
 - [Overview](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/overview.md): Pitch, install, mental model, scope boundaries.
+  - *Auto-trigger:* First-time `mongezVite()` setup or any "what does @mongez/vite do / what's its lifecycle and scope" question.
 - [README](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/README.md): Marketing-style index with `vite.config.ts` snippets per feature.
 - [Changelog](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/CHANGELOG.md): Release notes.
 
 ## Reference (by feature)
 
 - [Env loading](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/env-loading.md): `.env.<environment>` file resolution per command, `productionEnvName`, behavior of @mongez/dotenv's coercion + `process.env` write-through.
+  - *Auto-trigger:* `productionEnvName` option, `.env.<stage>` files, or `env()` from `@mongez/dotenv` alongside `mongezVite()`.
 - [Env in HTML](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/env-in-html.md): `__KEY__` token replacement in `index.html`, `htmlEnvPrefix` / `htmlEnvSuffix`, gotchas with URL attributes.
+  - *Auto-trigger:* `htmlEnvPrefix`/`htmlEnvSuffix` options, `__KEY__` tokens in `index.html`, or unresolved tokens shipping to production.
 - [Production base URL](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/production-base-url.md): `envBaseUrlKey`, trailing-slash normalisation, build-only behaviour, no-overwrite semantics.
+  - *Auto-trigger:* `envBaseUrlKey` option, `PUBLIC_URL` env var, or production assets loading from the wrong origin / CDN.
 - [tsconfig aliases](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/tsconfig-aliases.md): Mirroring `compilerOptions.paths` into `resolve.alias`, `/*` glob handling, opt-out via `linkTsconfigPaths`.
+  - *Auto-trigger:* `linkTsconfigPaths` / `tsconfigAlias` option, or `@/...` imports resolving in `tsc` but failing in Vite.
 - [Auto-open browser](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/auto-open-browser.md): `server.open` during `vite dev`, respect for explicit user settings.
+  - *Auto-trigger:* `autoOpenBrowser` option, or reconciling `server.open` with `mongezVite()` on `vite dev`.
 - [Build zip](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/build-zip.md): `compressBuild`, static / sync / async `compressedFileName`, output location, the `setTimeout` race.
+  - *Auto-trigger:* `compressBuild` / `compressedFileName` options, missing/partial `dist/build.zip`, or deploy scripts chaining `vite build && ...zip`.
 - [.htaccess](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/htaccess.md): SPA rewrite rules, force-HTTPS, GZIP, cache headers; what the bundled template covers.
+  - *Auto-trigger:* `htaccess: true` option, Apache SPA deploy, or questions about the bundled `.htaccess` template's rules.
 - [Pre-render](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/prerender.md): `prerender.php` template, crawler list, cache flag, delay, the dependency on `htaccess: true`.
+  - *Auto-trigger:* `preRender: { url, ... }` option, crawler/bot SEO for a Vite SPA, or questions about the emitted `prerender.php`.
 
 ## Recipes
 
 - [Recipes](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/recipes.md): Worked `vite.config.ts` integrations — minimal SPA, CDN base via env, Apache + prerender, multi-stage builds, env-only mode.
+  - *Auto-trigger:* Multi-option `mongezVite()` compositions, requests for a working `vite.config.ts` example, or multi-stage / Apache deploy pipelines.
 
 ## Quick rules
 

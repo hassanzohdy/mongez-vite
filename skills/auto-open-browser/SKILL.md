@@ -1,7 +1,9 @@
 ---
 name: mongez-vite-auto-open-browser
-description: How @mongez/vite automatically sets server.open = true during vite dev, when it defers to an explicit user setting, and how to opt out.
-when_to_use: User wants to control whether the browser auto-opens on vite dev, user is configuring the autoOpenBrowser option, user sees unexpected browser-open or no-open behaviour with mongezVite().
+description: |
+  How @mongez/vite automatically sets server.open = true during vite dev, when it defers to an explicit user setting, and how to opt out.
+  TRIGGER when: code passes `autoOpenBrowser` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; `vite.config.ts` has both `server: { open: ... }` and `mongezVite()` and the user wants to reconcile them; user asks "how do I stop Vite from auto-opening the browser with mongezVite", "why does my browser open / not open on `vite dev`", "how does mongezVite interact with `server.open`".
+  SKIP: pure Vite `server.open` configuration with no `@mongez/vite` plugin in scope; opening a specific path on dev start (the plugin clobbers the string form — user should set `autoOpenBrowser: false`); HMR / dev-server port / host issues; production-build behaviour (the helper short-circuits during `build`).
 ---
 
 # Auto-open browser

@@ -1,7 +1,9 @@
 ---
 name: mongez-vite-prerender
-description: How @mongez/vite emits a prerender.php and adds a crawler-routing rewrite to .htaccess so bots receive server-rendered HTML while real users get the SPA.
-when_to_use: User wants crawler or bot pre-rendering for their Vite SPA, user is configuring the preRender option in mongezVite(), user needs to understand the prerender.php output or the htaccess rewrite rule for bots, user is setting up integration with an external prerender service.
+description: |
+  How @mongez/vite emits a prerender.php and adds a crawler-routing rewrite to .htaccess so bots receive server-rendered HTML while real users get the SPA.
+  TRIGGER when: code passes a `preRender: { url, crawlers?, delay?, cache? }` object to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; project pairs `htaccess: true` with bot/SEO crawler concerns (Googlebot, facebookexternalhit, WhatsApp, Slack, Twitter); user asks "how do I prerender for crawlers in a Vite SPA", "how does the `prerender.php` work / what does it do", "how do I route bots to a render service like render.mentoor.io".
+  SKIP: the `.htaccess` template itself (use `mongez-vite-htaccess` — note `preRender` requires `htaccess: true`); Nginx / non-Apache prerender pipelines (this emits a PHP file gated by `.htaccess` rewrites); SSR frameworks like Next.js / Remix / vite-plugin-ssr; client-side hydration concerns.
 ---
 
 # Pre-render

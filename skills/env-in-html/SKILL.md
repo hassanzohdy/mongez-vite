@@ -1,7 +1,9 @@
 ---
 name: mongez-vite-env-in-html
-description: How @mongez/vite replaces __KEY__-style tokens in index.html with env values via its transformIndexHtml hook, including custom delimiters and gotchas.
-when_to_use: User wants to inject env values into index.html at build time, user is using __KEY__ tokens in HTML, user wants to configure htmlEnvPrefix or htmlEnvSuffix, user sees unresolved tokens in their shipped HTML.
+description: |
+  How @mongez/vite replaces __KEY__-style tokens in index.html with env values via its transformIndexHtml hook, including custom delimiters and gotchas.
+  TRIGGER when: code passes `htmlEnvPrefix` or `htmlEnvSuffix` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; `index.html` contains `__KEY__`-style tokens (or custom-delimited `{{KEY}}` / `<!--KEY-->` shapes) paired with `mongezVite()` in `plugins: []`; user asks "how do I inject env values into index.html", "why are my `__APP_NAME__` tokens not being replaced", "how do I change the env token delimiters in HTML".
+  SKIP: env file resolution / `productionEnvName` (use `mongez-vite-env-loading`); reading env values at runtime in the browser (that's Vite's `import.meta.env.VITE_*`, not `@mongez/vite`); HTML transforms unrelated to env tokens; generic templating engines (EJS, Handlebars) not driven by `mongezVite`.
 ---
 
 # Env in HTML
