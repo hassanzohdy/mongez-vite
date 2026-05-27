@@ -137,7 +137,7 @@ A request from a real user agent (`Mozilla/...`):
 ## Sharp edges
 
 - **`preRender.url` is required when `preRender` is enabled.** `defaultOptions.ts` has `preRender: false`, and there is no implicit default for `url`. If you set `preRender: {}` without `url`, `generateHtaccess()` throws a descriptive build-time error (`preRender.url is required when preRender is enabled`). Always set `url` explicitly.
-- **Requires `htaccess: true`.** The PHP is emitted regardless, but without the rewrite rule it sits there unreachable.
+- **Requires `htaccess: true`.** The whole `generateHtaccess` step short-circuits when `htaccess: false`, so neither `.htaccess` nor `prerender.php` is emitted. Pair `preRender` with `htaccess: true` explicitly.
 - **No Apache means no prerender.** This pipeline is Apache-specific (`.htaccess` + PHP). Nginx / Caddy hosts need a different strategy.
 - **The cache directory is created lazily** by the PHP. Make sure the web server has write permission to `<outDir>/cache/`.
 - **`__agent` is forwarded to the service** so its rendering can detect the original crawler. Whether your service uses it depends on its implementation.

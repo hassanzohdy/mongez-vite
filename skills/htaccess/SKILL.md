@@ -85,7 +85,7 @@ RewriteRule (.*) prerender.php [L,QSA]
 
 If `preRender: false` (the default), the `# Prerender` marker is replaced with an empty string and no crawler routing happens.
 
-See [`prerender.md`](./prerender.md) for the full prerender pipeline.
+See [`prerender/SKILL.md`](../prerender/SKILL.md) for the full prerender pipeline.
 
 ## Cache behaviour
 
