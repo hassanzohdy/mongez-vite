@@ -26,8 +26,36 @@ The package is intentionally narrow:
 ## Install
 
 ```sh
+# npm
+npm install -D @mongez/vite
+
+# yarn
 yarn add -D @mongez/vite
-# peer: vite >= 5.0.0
+
+# pnpm
+pnpm add -D @mongez/vite
+```
+
+Peer dep: `vite >= 5.0.0`. Install as a dev dependency — `@mongez/vite` is build-time only, no runtime code ships to the browser.
+
+## Quick example
+
+Register the plugin in `vite.config.ts`. The default profile turns on env loading, HTML interpolation, tsconfig aliases, auto-open dev, production base URL, and post-build zip — all driven by your `.env.<environment>` files:
+
+```ts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import mongezVite from "@mongez/vite";
+
+export default defineConfig({
+  plugins: [
+    mongezVite({
+      htaccess: true,                              // emit Apache SPA fallback rules
+      preRender: { url: "https://render.io" },     // route crawlers to a prerender service
+    }),
+    react(),
+  ],
+});
 ```
 
 ## Import pattern
