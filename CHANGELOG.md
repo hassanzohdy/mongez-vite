@@ -1,6 +1,6 @@
 # Changelog — @mongez/vite
 
-## Unreleased
+## [2.1.4] — 2026-05-26
 
 ### Added
 
@@ -21,9 +21,8 @@ Each was reproduced as a `.skip()` test in `src/__tests__/known-bugs.test.ts`; t
 - **`preRender.url` had no default and no runtime guard** — passing `preRender: {}` interpolated the literal string `undefined` into both the rewrite rule and the generated `prerender.php`. Fixed: `generateHtaccess()` now throws a descriptive build-time error if `preRender` is truthy but `preRender.url` is missing. The throwing approach (rather than tightening the TypeScript type) catches the bug at runtime for JS consumers too.
 - **Legacy README naming: `envPrefix` / `envSuffix`**. Older revisions documented option keys that the runtime never read; the source reads `htmlEnvPrefix` / `htmlEnvSuffix`. Fixed: the README and `skills/env-in-html.md` use the correct names. A regression-guard test asserts the doc surfaces stay in sync.
 
-### Dependency notes
+### Changed
 
-- **`@mongez/reinforcements` is pinned to `^2.3.1`** in `dependencies`. The rest of the `@mongez/*` family has moved to `3.x`. The two surfaces this package uses (`rtrim`) are API-compatible across both major versions, so the pin is not blocking — but bumping to `^3.0.0` would align with siblings and avoid a duplicate package in `node_modules` for consumers using both.
 - **`vite` is declared as a `peerDependency`** (`>=5.0.0`) and now also as a `devDependency` (`^5.0.0`) so the test suite can resolve it without a containing app providing it.
 
 ### Tests
