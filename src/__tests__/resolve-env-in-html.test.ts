@@ -93,4 +93,32 @@ describe("transformEnvironmentVariablesInHtml", () => {
     });
     expect(out).toBe("<link href=\"http://localhost:3000\" />");
   });
+
+  describe("hostile env values cannot inject HTML or corrupt via `String.replace` patterns", () => {
+    it("HTML-escapes a `<script>` breakout payload instead of injecting it", () => {
+      loadEnvFile(path.join(FIXTURES, ".env.injection"), false);
+      const html = "<title>__XSS__</title>";
+      const out = transformEnvironmentVariablesInHtml(html, {
+        htmlEnvPrefix: "__",
+        htmlEnvSuffix: "__",
+      });
+
+      expect(out).not.toContain("<script>");
+      expect(out).toContain("&lt;script&gt;");
+    });
+
+    it("does not interpret `$&`/`$$` in the env value as a String.replace pattern", () => {
+      loadEnvFile(path.join(FIXTURES, ".env.injection"), false);
+      const html = "<p>__DOLLAR__</p>";
+      const out = transformEnvironmentVariablesInHtml(html, {
+        htmlEnvPrefix: "__",
+        htmlEnvSuffix: "__",
+      });
+
+      // The literal value contains `$&` and `$$`; a naive `.replace(regex,
+      // value)` call would corrupt this by re-inserting the match or
+      // collapsing `$$` to `$`.
+      expect(out).toBe("<p>$&amp;-$$-literal</p>");
+    });
+  });
 });

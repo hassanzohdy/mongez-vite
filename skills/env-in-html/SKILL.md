@@ -2,8 +2,6 @@
 name: mongez-vite-env-in-html
 description: |
   How @mongez/vite replaces __KEY__-style tokens in index.html with env values via its transformIndexHtml hook, including custom delimiters and gotchas.
-  TRIGGER when: code passes `htmlEnvPrefix` or `htmlEnvSuffix` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; `index.html` contains `__KEY__`-style tokens (or custom-delimited `{{KEY}}` / `<!--KEY-->` shapes) paired with `mongezVite()` in `plugins: []`; user asks "how do I inject env values into index.html", "why are my `__APP_NAME__` tokens not being replaced", "how do I change the env token delimiters in HTML".
-  SKIP: env file resolution / `productionEnvName` (use `mongez-vite-env-loading`); reading env values at runtime in the browser (that's Vite's `import.meta.env.VITE_*`, not `@mongez/vite`); HTML transforms unrelated to env tokens; generic templating engines (EJS, Handlebars) not driven by `mongezVite`.
 ---
 
 # Env in HTML
@@ -100,4 +98,4 @@ Result:
 - **Tokens for unknown keys are left intact.** This is by design — there's no warning when a token doesn't match. If you see `__APP_NAME__` in your shipped HTML, the env variable wasn't loaded.
 - **URL attribute parsers don't like `%` or `$`.** Vite's HTML transform parses `<link href>` and `<script src>` as URLs before our hook runs. If you use `%KEY%` or `$KEY$` as delimiters, those characters fail URL parsing on tag attributes. Stick to `__KEY__`, `{{KEY}}`, or `<!--KEY-->`.
 - **The hook runs on every emitted HTML file.** If your build emits multiple HTML entry points, env tokens are replaced in each.
-- **No escaping.** If your env value contains `<` or `&`, it's spliced verbatim into the HTML. Don't put untrusted input through this transform.
+- **Values are HTML-escaped** (since v2.2.0). `&`, `<`, `>`, `"` and `'` in an env value are escaped before substitution, so a value carrying markup renders as text instead of becoming live HTML. If you were injecting a tag through a placeholder, put that markup in `index.html` itself. The replacement is also literal — a `$&` or `$1` inside a value is no longer treated as a regex replacement pattern.

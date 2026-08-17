@@ -2,8 +2,6 @@
 name: mongez-vite-htaccess
 description: |
   How @mongez/vite generates and writes an Apache .htaccess file into the build output for SPA routing, HTTPS enforcement, compression, and cache headers.
-  TRIGGER when: code passes `htaccess: true` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; project deploys a Vite SPA to Apache and ships a `.htaccess` with `RewriteEngine On` / SPA fallback rules; user asks "how do I generate `.htaccess` for my Vite SPA", "what's inside the mongezVite `.htaccess` template", "how do I add SPA rewrite rules / force HTTPS / GZIP on Apache".
-  SKIP: prerender PHP and the crawler rewrite that lives inside `.htaccess` (use `mongez-vite-prerender`); Nginx / Caddy / Cloudflare Workers SPA routing (Apache-specific); customising cache headers per filetype beyond what the bundled template ships (post-process the emitted file); raw `.htaccess` authoring with no `mongezVite()` plugin in the config.
 ---
 
 # `.htaccess` generation

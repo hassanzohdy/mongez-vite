@@ -2,8 +2,6 @@
 name: mongez-vite-env-loading
 description: |
   How @mongez/vite loads the correct .env file per Vite command, delegates to @mongez/dotenv for type coercion and shared-env layering, and exposes values via the env() helper.
-  TRIGGER when: code configures `mongezVite({ productionEnvName: ... })` in `vite.config.ts` / `vite.config.js`, or imports `env` from `@mongez/dotenv` alongside `mongezVite` usage; user asks "how do I load .env in Vite with mongezVite", "how do I switch between .env.staging / .env.production at build time", "why is my .env not loading"; project has `.env.shared` / `.env.production` / `.env.development` / `.env.build` / `.env.local` files plus `mongezVite()` registered.
-  SKIP: in-HTML token replacement (use `mongez-vite-env-in-html`); deriving `config.base` from env (use `mongez-vite-production-base-url`); raw `@mongez/dotenv` usage with no `mongezVite()` plugin in the config; Vite's built-in `loadEnv` / `import.meta.env.VITE_*` without `@mongez/vite`; generic dotenv libraries (`dotenv`, `dotenv-flow`).
 ---
 
 # Env loading

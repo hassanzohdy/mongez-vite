@@ -1,5 +1,19 @@
 # Changelog — @mongez/vite
 
+## [2.2.0] — 2026-08-17
+
+Security release. The prerender fix is the important one: the generated `prerender.php` is a file you **deploy to production**, and the previous template interpolated build-time config into PHP source unescaped. Anyone shipping `preRender` should upgrade and regenerate.
+
+### Security
+
+- **Remote code execution in the generated `prerender.php`** (`src/prerender.ts`). `preRender.url`, `preRender.delay` and `preRender.cache` were pasted into the PHP template as raw source text, so a value containing a quote closed the string literal and everything after it was executed as PHP on the deployed server. The values reach the template from `vite.config.ts` and, in the common setup, from an env var (`PRERENDER_URL`) — i.e. from a CI variable or an `.env` file, not necessarily from the person reading the config. Each value is now encoded for the position it lands in: strings via `var_export`-style quoting, `delay`/`cache` coerced to integers. **`CURLOPT_SSL_VERIFYPEER` / `CURLOPT_SSL_VERIFYHOST` are now enabled** in the same file — the template previously disabled TLS verification outright, so the prerendered HTML served to crawlers could be substituted by anyone on the path between the server and the prerender service.
+- **Newline injection into `.htaccess`** (`src/generateHtaccess.ts`). The `crawlers` option was interpolated into a `RewriteCond` line verbatim; a value containing a newline could terminate the condition and append arbitrary Apache directives to the deployed `.htaccess`. Newlines and `.htaccess` metacharacters are now stripped from the value, and an empty/whitespace-only result falls back to `DEFAULT_CRAWLERS` rather than emitting a condition that matches everything.
+- **Path traversal in `compressBuild`** (`src/compressBuild.ts`). The zip file name came from config and was joined onto the build directory unchecked, so `../../deploy.zip` wrote outside `outDir`. The name is now reduced to its `path.basename`, containing the write to the build directory.
+
+### Changed
+
+- **Env values substituted into `index.html` are now HTML-escaped** (`src/resolve-env-in-htm.ts`). `{{ VITE_X }}` placeholders were replaced with the raw env value, so an env var carrying markup (`</title><script>…`) became live HTML in the built page — a stored-XSS path for anyone who can set a build-time variable. Values are now escaped (`&`, `<`, `>`, `"`, `'`) before substitution, and the replacement is literal: a `$&` or `$1` inside a value is no longer interpreted as a regex replacement pattern. **Behaviour note:** if you were intentionally injecting markup through an env placeholder, it now renders as text. Emit that markup from `index.html` itself instead.
+
 ## [2.1.4] — 2026-05-26
 
 ### Added

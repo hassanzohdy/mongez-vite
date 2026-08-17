@@ -2,8 +2,6 @@
 name: mongez-vite-tsconfig-aliases
 description: |
   How @mongez/vite mirrors compilerOptions.paths from tsconfig.json into Vite's resolve.alias so TypeScript path aliases work in both tsc and the Vite dev server without a separate plugin.
-  TRIGGER when: code passes `linkTsconfigPaths` or `tsconfigAlias` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; project has `tsconfig.json` with `compilerOptions.paths` (e.g. `"@/*": ["src/*"]`) alongside `mongezVite()` registered; user asks "why do my `@/...` imports work in tsc but fail in Vite", "how do I sync tsconfig paths with Vite aliases", "how does mongezVite handle `resolve.alias`".
-  SKIP: third-party path-alias plugins like `vite-tsconfig-paths` not paired with `@mongez/vite`; hand-written `resolve.alias` arrays in `vite.config.ts` (the plugin defers to those); Webpack / Jest `moduleNameMapper` path resolution; tsconfig `references` / project-references setup.
 ---
 
 # tsconfig path aliases

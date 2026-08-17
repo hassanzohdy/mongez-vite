@@ -106,7 +106,7 @@ During `vite build`, the plugin sets `config.base` from `env(envBaseUrlKey)` (de
 > **Auto-trigger:** code passes `htmlEnvPrefix` or `htmlEnvSuffix` to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; `index.html` contains `__KEY__`-style tokens (or custom-delimited `{{KEY}}` / `<!--KEY-->` shapes) paired with `mongezVite()` in `plugins: []`; user asks "how do I inject env values into index.html", "why are my `__APP_NAME__` tokens not being replaced", "how do I change the env token delimiters in HTML".
 > **Skip when:** env file resolution / `productionEnvName` (use `mongez-vite-env-loading`); reading env values at runtime in the browser (that's Vite's `import.meta.env.VITE_*`, not `@mongez/vite`); HTML transforms unrelated to env tokens; generic templating engines (EJS, Handlebars) not driven by `mongezVite`.
 
-Every occurrence of `<prefix><KEY><suffix>` in `index.html` is replaced with the typed env value (coerced to string via JS template substitution). Default delimiters are `__`...`__`. Override via `htmlEnvPrefix` / `htmlEnvSuffix`. Tokens for keys not loaded into the env store pass through unchanged.
+Every occurrence of `<prefix><KEY><suffix>` in `index.html` is replaced with the typed env value (coerced to string, then **HTML-escaped** — `&`, `<`, `>`, `"`, `'` — and inserted literally, so markup in an env value renders as text and `$&`/`$1` are not treated as replacement patterns). Default delimiters are `__`...`__`. Override via `htmlEnvPrefix` / `htmlEnvSuffix`. Tokens for keys not loaded into the env store pass through unchanged.
 
 ```html
 <title>__APP_NAME__</title>
@@ -177,7 +177,7 @@ If `preRender` is set, a `RewriteCond` + `RewriteRule` block is spliced into the
 `preRender: { url, crawlers, delay, cache }`:
 
 - `url` — the prerender service to POST to. Default in the README is `https://render.mentoor.io`. **Required if `preRender` is set as an object.** No safe default in code.
-- `crawlers` — pipe-separated regex alternation of user agents. Default in the README is `Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot`. The duplicate trailing `bot` is intentional in the source.
+- `crawlers` — pipe-separated regex alternation of user agents. Newlines and `.htaccess` metacharacters are stripped from the value (a newline could otherwise append arbitrary Apache directives); an empty result falls back to the default list. Default in the README is `Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot`. The duplicate trailing `bot` is intentional in the source.
 - `delay` — milliseconds to wait before rendering. Default `5000`.
 - `cache` — when truthy, the generated PHP caches each render under `<outDir>/cache/<sha1(url)>.html`.
 

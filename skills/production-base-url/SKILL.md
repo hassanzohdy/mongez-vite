@@ -2,8 +2,6 @@
 name: mongez-vite-production-base-url
 description: |
   How @mongez/vite reads an env variable during vite build and writes it into config.base so assets are referenced from the correct CDN or subpath URL.
-  TRIGGER when: code passes `envBaseUrlKey` (or relies on the default `PUBLIC_URL`) to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; `.env.production` / `.env.<stage>` declares `PUBLIC_URL` or a custom CDN key alongside `mongezVite()` registered; user asks "how do I set Vite's base URL from env", "why do production assets load from the wrong origin / 404 from `/assets/...`", "how do I deploy a Vite SPA behind a CDN or subpath".
-  SKIP: dev-server base behaviour (the plugin never touches `config.base` during `serve`); hand-setting `base` in `vite.config.ts` (the plugin defers to that); `MongezViteOptions.baseUrl` (currently informational — set `base` on the Vite config directly); env file resolution itself (use `mongez-vite-env-loading`).
 ---
 
 # Production base URL

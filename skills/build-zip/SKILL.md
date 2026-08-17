@@ -2,8 +2,6 @@
 name: mongez-vite-build-zip
 description: |
   How @mongez/vite zips the Vite build output directory after a successful build, including custom filenames, output location, and how to opt out.
-  TRIGGER when: code passes `compressBuild` or `compressedFileName` (string / sync / async function) to `mongezVite({...})` in `vite.config.ts` / `vite.config.js`; deploy script chains `vite build && <something with dist/build.zip>`; user asks "how do I zip Vite output for deploy", "why is `dist/build.zip` missing or partial after `vite build`", "how do I name the zip per git tag / build number".
-  SKIP: `.htaccess` generation (use `mongez-vite-htaccess`); prerender PHP emission (use `mongez-vite-prerender`); other archive formats like `.tar.gz` (this plugin emits zip only — script it yourself); generic Node zip libraries (`archiver`, `adm-zip`) used without `@mongez/vite`.
 ---
 
 # Build zip
