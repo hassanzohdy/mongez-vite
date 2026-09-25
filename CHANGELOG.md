@@ -1,5 +1,10 @@
 # Changelog — @mongez/vite
 
+## [2.2.1] — 2026-09-25
+
+### Changed
+- Added a grouped Agent Kit skills index for topic-based discovery.
+
 ## [2.2.0] — 2026-08-17
 
 Security release. The prerender fix is the important one: the generated `prerender.php` is a file you **deploy to production**, and the previous template interpolated build-time config into PHP source unescaped. Anyone shipping `preRender` should upgrade and regenerate.
