@@ -1,5 +1,10 @@
 # Changelog — @mongez/vite
 
+## [2.2.2] — 2026-09-26
+
+### Fixed
+- `tsconfig.json` is read as JSON with comments, so a commented tsconfig (as scaffolds ship) no longer makes the tsconfig-paths alias linker throw.
+
 ## [2.2.1] — 2026-09-25
 
 ### Changed

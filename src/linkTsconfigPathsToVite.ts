@@ -1,5 +1,6 @@
-import { fileExists, getJsonFile } from "@mongez/fs";
+import { fileExists } from "@mongez/fs";
 import { UserConfig } from "vite";
+import { readJsoncFile } from "./read-jsonc";
 import { MongezViteOptions } from "./types";
 import { root } from "./utils";
 
@@ -11,7 +12,9 @@ export default function linkTsconfigPathsToVite() {
 
   if (!fileExists(root("tsconfig.json"))) return;
 
-  const tsconfig = getJsonFile(root("tsconfig.json"));
+  // tsconfig.json is JSON-with-comments; a plain JSON parse fails on the
+  // comments most scaffolds ship with.
+  const tsconfig = readJsoncFile(root("tsconfig.json"));
 
   if (!tsconfig.compilerOptions?.paths) return;
 
