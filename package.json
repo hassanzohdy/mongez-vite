@@ -26,9 +26,9 @@
     "vite": ">=5.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "vite": "^5.0.0",
-    "vitest": "^2.1.0"
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
   },
   "keywords": [
     "vite",
@@ -49,5 +49,6 @@
     "PUBLIC_URL",
     "production-base-url",
     "env-in-html"
-  ]
+  ],
+  "packageManager": "pnpm@12.15.0"
 }
