@@ -88,8 +88,11 @@ describe("resolveEnvironmentVariables — build mode", () => {
     const dir = fixtureDir("build-no-env");
     process.chdir(dir);
 
+    // Compared with the value before the call rather than `undefined`: dotenv
+    // 1.x copies process.env (vitest's MODE=test) into its store at import.
+    const before = env("MODE");
     expect(() => resolveEnvironmentVariables("build", {})).not.toThrow();
-    expect(env("MODE")).toBeUndefined();
+    expect(env("MODE")).toBe(before);
   });
 });
 
@@ -133,8 +136,10 @@ describe("resolveEnvironmentVariables — productionEnvName override", () => {
 
     // `productionEnvName: "stage"` set but no `.env.stage` exists. The
     // helper returns early — it does NOT fall back to `.env.production`.
+    const before = env("MODE");
     resolveEnvironmentVariables("build", { productionEnvName: "stage" });
-    expect(env("MODE")).toBeUndefined();
+    expect(env("MODE")).not.toBe("prod");
+    expect(env("MODE")).toBe(before);
   });
 
   it("ignores `productionEnvName` during serve mode (falls through to detect path)", () => {
