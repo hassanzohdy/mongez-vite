@@ -7,6 +7,7 @@
  * move the zip outside the intended build directory.
  */
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import compressBuild from "../compressBuild";
@@ -100,5 +101,34 @@ describe("compressBuild() compressedFileName path traversal", () => {
     const zipPath = path.join(buildDir, "build.zip");
     expect(fs.existsSync(zipPath)).toBe(true);
     expect(fs.statSync(zipPath).size).toBeGreaterThan(0);
+  });
+});
+
+describe("compressBuild() symlinks", () => {
+  it("leaves symlink entries out of the zip", async () => {
+    // A temp dir, so the run never leaves a machine-specific symlink in the tree.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mongez-vite-symlink-"));
+    const buildDir = path.join(dir, "dist");
+    fs.mkdirSync(buildDir, { recursive: true });
+    fs.writeFileSync(path.join(buildDir, "index.html"), "<html></html>");
+    const secret = path.join(dir, "secret.txt");
+    fs.writeFileSync(secret, "outside the build");
+    fs.symlinkSync(secret, path.join(buildDir, "link.txt"));
+
+    process.chdir(dir);
+
+    try {
+      await compressBuild(
+        { build: { outDir: "dist" } } as any,
+        { compressBuild: true, compressedFileName: "build.zip" },
+      );
+
+      const zip = fs.readFileSync(path.join(buildDir, "build.zip")).toString("latin1");
+      expect(zip).toContain("index.html");
+      expect(zip).not.toContain("link.txt");
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

@@ -1,5 +1,20 @@
 # Changelog — @mongez/vite
 
+## [2.2.3] — 2026-11-16
+
+### Fixed
+
+- The build zip skips symbolic links instead of storing them as link entries.
+
+### Changed
+
+- The generated `prerender.php` sets curl connect (10 s) and total (60 s) timeouts, so a hung renderer no longer ties up a PHP worker, and creates its cache directory with mode 0755 instead of 0777.
+- Tests: the two `detect-dot-env` tests no longer read Vitest's injected `MODE`, and the compress-await test zips into a temp directory instead of rewriting a tracked fixture.
+
+### Documentation
+
+- README and the prerender skill note that the prerender cache keeps one file per distinct query string, so the directory grows with the number of distinct URLs crawled.
+
 ## [2.2.2] — 2026-09-26
 
 ### Fixed

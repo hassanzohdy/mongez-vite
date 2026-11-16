@@ -19,14 +19,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { env, resetEnv } from "@mongez/dotenv";
 import resolveEnvironmentVariables from "../detect-dot-env";
 
-// Helper: strip a key out of @mongez/dotenv's internal store so a missing
-// load leaves it unset. `resetEnv` re-seeds from the import-time snapshot
-// of process.env, so vitest-injected keys like `MODE=test` survive a reset
-// and falsely satisfy `env("MODE")`. We blow them away explicitly.
-function clearStoreKey(key: string) {
-  const all = env.all() as Record<string, unknown>;
-  delete all[key];
-}
+// `env(key)` falls through to `process.env`, and vitest injects `MODE=test`
+// there, so a missing .env load would still resolve `env("MODE")` to "test".
+// Remove the key from `process.env` for each test and put it back afterwards.
+const originalMode = process.env.MODE;
 
 const FIXTURES_ROOT = path.join(__dirname, "fixtures", "env-detection");
 
@@ -45,15 +41,16 @@ function writeEnvFile(dir: string, filename: string, body: string): void {
 beforeEach(() => {
   originalCwd = process.cwd();
   resetEnv();
-  // resetEnv() re-seeds from process.env's import-time snapshot, so
-  // vitest-injected keys (MODE=test) survive a reset. Strip the key we
-  // care about so a missing .env file genuinely leaves it unset.
-  clearStoreKey("MODE");
+  // Strip the key we care about so a missing .env file genuinely leaves it
+  // unset.
+  delete process.env.MODE;
 });
 
 afterEach(() => {
   process.chdir(originalCwd);
   resetEnv();
+  if (originalMode === undefined) delete process.env.MODE;
+  else process.env.MODE = originalMode;
 });
 
 describe("resolveEnvironmentVariables — build mode", () => {

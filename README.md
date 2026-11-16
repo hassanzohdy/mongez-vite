@@ -405,7 +405,7 @@ A request from a crawler matches the rewrite, hits `prerender.php`, the PHP forw
 
 > **`preRender` requires `htaccess: true`.** The rewrite rule lives inside the `.htaccess` — without it the PHP file sits there unreachable. The plugin throws a descriptive build-time error if you set `preRender` without `htaccess` or without `preRender.url`.
 
-> **The cache directory is created lazily by the PHP.** Make sure the Apache user has write permission to `<outDir>/cache/`.
+> **The cache directory is created lazily by the PHP.** Make sure the Apache user has write permission to `<outDir>/cache/` (created with mode 0755). The cache holds one file per distinct URL including its query string, so it grows with every distinct query string crawlers request; clear it after each deploy. The generated PHP also sets a 10 s connect and 60 s total curl timeout.
 
 ---
 

@@ -24,7 +24,7 @@ dist/
 └── build.zip          ← contains everything else above
 ```
 
-The zip contains the **contents** of the output directory, not the directory itself. Unzipping at the destination drops the files in directly.
+The zip contains the **contents** of the output directory, not the directory itself. Unzipping at the destination drops the files in directly. Symlinks inside the output directory are skipped, not followed.
 
 ## Opting out
 

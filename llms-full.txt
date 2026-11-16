@@ -148,7 +148,7 @@ When `tsconfig.json` is missing or has no `paths`, the helper is a no-op.
 
 1. Resolves the output directory from `config.build.outDir` (default `"dist"`).
 2. Resolves the filename from `compressedFileName` (static string, sync function, or async function).
-3. Creates a `.zip` containing the **contents** of the output directory.
+3. Creates a `.zip` containing the **contents** of the output directory. Symbolic links inside it are skipped, not followed or stored as link entries.
 4. Moves the zip back into the output directory.
 
 > **Sharp edge:** the zip is created inside a `setTimeout(..., 1000)`. Vite's `writeBundle` returns before the zip finishes. Tools that run `vite build && next-step` may see the artifact missing.
@@ -179,7 +179,9 @@ If `preRender` is set, a `RewriteCond` + `RewriteRule` block is spliced into the
 - `url` — the prerender service to POST to. Default in the README is `https://render.mentoor.io`. **Required if `preRender` is set as an object.** No safe default in code.
 - `crawlers` — pipe-separated regex alternation of user agents. Newlines and `.htaccess` metacharacters are stripped from the value (a newline could otherwise append arbitrary Apache directives); an empty result falls back to the default list. Default in the README is `Google-Site-Verification|Googlebot|facebook|crawl|WhatsApp|bot|Slack|Twitter|bot`. The duplicate trailing `bot` is intentional in the source.
 - `delay` — milliseconds to wait before rendering. Default `5000`.
-- `cache` — when truthy, the generated PHP caches each render under `<outDir>/cache/<sha1(url)>.html`.
+- `cache` — when truthy, the generated PHP caches each render under `<outDir>/cache/<sha1(url)>.html`. The key is the SHA-1 of the full URL including the query string, so the directory keeps one file per distinct query string and grows with the number of distinct URLs crawled (including `?param=` variants); clear it after each deploy. The directory is created lazily by the PHP with mode 0755 (the web server needs write permission to `<outDir>/cache/`).
+
+The generated `prerender.php` sets a 10 s curl connect timeout and a 60 s total timeout, so a hung render service no longer ties up a PHP worker.
 
 Requires `htaccess: true` — the rewrite rule that routes bots to `prerender.php` lives in the `.htaccess`.
 

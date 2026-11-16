@@ -12,6 +12,7 @@
  *   4. Legacy `envPrefix` / `envSuffix` option names in older README revisions.
  */
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import compressBuild from "../compressBuild";
@@ -79,25 +80,31 @@ describe("previously known bugs (now fixed)", () => {
    * on disk inside the build directory.
    */
   it("compressBuild() awaits the archive pipeline — build.zip exists when the promise resolves", async () => {
-    const dir = fixtureDir("compress-await");
+    // Zip into a temp dir so the run never rewrites a tracked fixture file.
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mongez-vite-compress-"));
     const buildDir = path.join(dir, "dist");
     fs.mkdirSync(buildDir, { recursive: true });
     fs.writeFileSync(path.join(buildDir, "index.html"), "<html></html>");
 
     process.chdir(dir);
 
-    await compressBuild(
-      { build: { outDir: "dist" } } as any,
-      {
-        compressBuild: true,
-        compressedFileName: "build.zip",
-      },
-    );
+    try {
+      await compressBuild(
+        { build: { outDir: "dist" } } as any,
+        {
+          compressBuild: true,
+          compressedFileName: "build.zip",
+        },
+      );
 
-    // The zip ends up moved INTO the build directory by compressBuild.
-    const zipPath = path.join(buildDir, "build.zip");
-    expect(fs.existsSync(zipPath)).toBe(true);
-    expect(fs.statSync(zipPath).size).toBeGreaterThan(0);
+      // The zip ends up moved INTO the build directory by compressBuild.
+      const zipPath = path.join(buildDir, "build.zip");
+      expect(fs.existsSync(zipPath)).toBe(true);
+      expect(fs.statSync(zipPath).size).toBeGreaterThan(0);
+    } finally {
+      process.chdir(originalCwd);
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
 
     // Source check — guard against re-introducing the setTimeout wrapper.
     const source = fs.readFileSync(

@@ -57,12 +57,14 @@ function get_content($URL) {
   $ch = curl_init();
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
   curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+  curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+  curl_setopt($ch, CURLOPT_TIMEOUT, 60);
   curl_setopt($ch, CURLOPT_URL, $URL);
   $data = curl_exec($ch);
   curl_close($ch);
 
   if (!file_exists($cachedPagesDirectory)) {
-    mkdir($cachedPagesDirectory, 0777, true);
+    mkdir($cachedPagesDirectory, 0755, true);
   }
   file_put_contents($cachedFile, $data);
   return $data;
@@ -137,5 +139,5 @@ A request from a real user agent (`Mozilla/...`):
 - **`preRender.url` is required when `preRender` is enabled.** `defaultOptions.ts` has `preRender: false`, and there is no implicit default for `url`. If you set `preRender: {}` without `url`, `generateHtaccess()` throws a descriptive build-time error (`preRender.url is required when preRender is enabled`). Always set `url` explicitly.
 - **Requires `htaccess: true`.** The whole `generateHtaccess` step short-circuits when `htaccess: false`, so neither `.htaccess` nor `prerender.php` is emitted. Pair `preRender` with `htaccess: true` explicitly.
 - **No Apache means no prerender.** This pipeline is Apache-specific (`.htaccess` + PHP). Nginx / Caddy hosts need a different strategy.
-- **The cache directory is created lazily** by the PHP. Make sure the web server has write permission to `<outDir>/cache/`.
+- **The cache directory is created lazily** by the PHP. Make sure the web server has write permission to `<outDir>/cache/` (created with mode 0755). The cache key is the SHA-1 of the full URL including the query string, so the directory keeps one file per distinct query string; clear it after each deploy and consider it when crawlers hit many `?param=` variants.
 - **`__agent` is forwarded to the service** so its rendering can detect the original crawler. Whether your service uses it depends on its implementation.

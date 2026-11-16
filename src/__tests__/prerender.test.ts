@@ -9,6 +9,14 @@ import { describe, expect, it } from "vitest";
 import generatePreRenderContent from "../prerender";
 
 describe("generatePreRenderContent", () => {
+  it("sets curl timeouts and creates the cache directory with 0755", () => {
+    const out = generatePreRenderContent({ prerenderUrl: "https://r.io", cache: true, delay: 5000 });
+    expect(out).toContain("CURLOPT_CONNECTTIMEOUT");
+    expect(out).toContain("CURLOPT_TIMEOUT");
+    expect(out).toContain("0755");
+    expect(out).not.toContain("0777");
+  });
+
   it("embeds the prerender URL into the generated PHP", () => {
     const out = generatePreRenderContent({
       prerenderUrl: "https://my-prerender.example.com",

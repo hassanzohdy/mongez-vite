@@ -23,7 +23,7 @@ The whole package is a single Vite plugin object. You bolt it onto `plugins: []`
   - *Auto-trigger:* `linkTsconfigPaths` / `tsconfigAlias` option, or `@/...` imports resolving in `tsc` but failing in Vite.
 - [Auto-open browser](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/auto-open-browser.md): `server.open` during `vite dev`, respect for explicit user settings.
   - *Auto-trigger:* `autoOpenBrowser` option, or reconciling `server.open` with `mongezVite()` on `vite dev`.
-- [Build zip](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/build-zip.md): `compressBuild`, static / sync / async `compressedFileName`, output location, the `setTimeout` race.
+- [Build zip](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/build-zip.md): `compressBuild`, static / sync / async `compressedFileName`, output location (symlinks are skipped), the `setTimeout` race.
   - *Auto-trigger:* `compressBuild` / `compressedFileName` options, missing/partial `dist/build.zip`, or deploy scripts chaining `vite build && ...zip`.
 - [.htaccess](https://raw.githubusercontent.com/hassanzohdy/mongez-vite/main/skills/htaccess.md): SPA rewrite rules, force-HTTPS, GZIP, cache headers; what the bundled template covers.
   - *Auto-trigger:* `htaccess: true` option, Apache SPA deploy, or questions about the bundled `.htaccess` template's rules.

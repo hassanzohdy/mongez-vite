@@ -37,7 +37,15 @@ export default async function compressBuild(
 
   archive.pipe(output);
 
-  await archive.directory(buildPath, "").finalize();
+  // Skip symlinks so a link inside the build output can't pull files from
+  // outside it into the zip.
+  await archive
+    .directory(buildPath, "", (entry) =>
+      fs.lstatSync(path.join(buildPath, entry.name)).isSymbolicLink()
+        ? false
+        : entry
+    )
+    .finalize();
   moveFile(root(fileName), path.join(buildPath, fileName));
 
   console.log(
